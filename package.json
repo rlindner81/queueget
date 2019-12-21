@@ -1,0 +1,49 @@
+{
+  "name": "queueget",
+  "version": "1.0.0",
+  "description": "Download links from a queue file",
+  "bin": {
+    "qget": "./bin/cli.js"
+  },
+  "main": "./src/index.js",
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "lint": "eslint . --fix",
+    "test": "jest",
+    "prepublishOnly": "npm audit && npm run lint && npm run test",
+    "update-lock": "pushpull .npmrc --on '#WRITE_LOCK' && npm up && npm ddp && pushpull .npmrc --off '#WRITE_LOCK'",
+    "upgrade-lock": "pushpull .npmrc --on '#WRITE_LOCK' && shx rm -rf 'package-lock.json node_modules' && npm i && npm ddp && pushpull .npmrc --off '#WRITE_LOCK'"
+  },
+  "engines": {
+    "node": ">=10.0.0",
+    "npm": ">=6.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-jest": "^22.21.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1",
+    "pushpulljs": "^1.0.5",
+    "shx": "^0.3.2"
+  },
+  "keywords": [
+    "cli",
+    "request",
+    "download",
+    "queue"
+  ],
+  "author": "Richard Lindner <rlindner81@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rlindner81/queueget.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rlindner81/queueget/issues"
+  }
+}
