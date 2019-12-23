@@ -63,3 +63,7 @@ typings/
 # editor
 .vscode/
 .idea/
+
+# app files
+queue.txt
+queue_finished.txt

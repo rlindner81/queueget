@@ -19,7 +19,9 @@ const newFileStack = filepath => {
         .map(line => line.trim())
         .filter(line => line.length > 0)
     } catch (err) {
-      console.warning(`could not read filepath ${filepath}: ${err.message}`)
+      if (err.code !== "ENOENT") {
+        throw err
+      }
       return []
     }
   }
@@ -52,7 +54,7 @@ const newFileStack = filepath => {
     try {
       await copyFile(filepath, backupFilepath)
     } catch (err) {
-      console.warning(`could not copy filepath ${filepath} to backup ${backupFilepath}: ${err.message}`)
+      console.warn(`could not copy filepath ${filepath} to backup ${backupFilepath}: ${err.message}`)
     }
   }
 
@@ -60,7 +62,7 @@ const newFileStack = filepath => {
     try {
       await copyFile(backupFilepath, filepath)
     } catch (err) {
-      console.warning(`could not restore backup ${backupFilepath} to filepath ${filepath}: ${err.message}`)
+      console.warn(`could not restore backup ${backupFilepath} to filepath ${filepath}: ${err.message}`)
     }
   }
 

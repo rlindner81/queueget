@@ -1,33 +1,56 @@
 "use strict"
 
-const _url = require("url")
-const newStackFile = require("./stackFile")
+const url = require("url")
+const newFileStack = require("./fileStack")
+const { sleep } = require("./helper")
 
-// TODO options => queuefile should be an option
+const RETRY_FREQUENCY = 60
+
 // TODO options => parallel != 1 for parallel processing of queue
 
-const fallback = url => {
-
+const _getAdapter = hostname => {
+  const adapterFilePath = `./adapter/${hostname.replace(/\W/g, "_")}`
+  try {
+    return require(adapterFilePath)
+  } catch (err) {
+    if (err.code === "MODULE_NOT_FOUND") {
+      return require(`./adapter/_fallback`)
+    }
+    throw err
+  }
 }
 
-const queue = async ({ filepath }) => {
-  const queue = (await readFile(filepath))
-    .toString()
-    .split("\n")
-    .map(line => line.trim())
-    .filter(line => line.length !== 0)
-  queue.forEach(line => {
-    const url = _url.parse(line)
-    let adapter = fallback
-    try {
-      adapter = require(`./adapter/${url.hostname}`)
-    } catch (err) {
-      console.warn(`warning: no custom adapter for ${url.hostname}, using fallback`)
+const queue = async (queueFile = "queue.txt", finishedFile = "queue_finished.txt", retries = 5) => {
+  const queueStack = newFileStack(queueFile)
+  const finishedStack = newFileStack(finishedFile)
+
+  while (true) {
+    const entry = await queueStack.peek()
+    if (entry === null) {
+      break
     }
-    await adapter(url)
-  })
+    const match = /^(?:(\w+)\s+)?(https?:\/\/.+)$/.exec(entry)
+    if (match === null) {
+      await queueStack.pop()
+      continue
+    }
+    const [, status, link] = match
+    const linkParts = url.parse(link)
+    for (let retry = 1; retry <= retries; retry++) {
+      try {
+        const adapter = _getAdapter(linkParts.hostname)
+        console.info(`using adapter ${adapter.name} for ${link}`)
+        await adapter.get(linkParts, queueStack)
+        await finishedStack.push(await queueStack.pop())
+        break
+      } catch (err) {
+        console.debug(err.stack || err.message)
+        console.warn(`waiting ${RETRY_FREQUENCY}sec to retry`)
+        await sleep(RETRY_FREQUENCY)
+      }
+      console.log(`try #${retry}`)
+    }
+  }
 }
 
 module.exports = queue
-
-
