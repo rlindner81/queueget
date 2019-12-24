@@ -41,17 +41,19 @@ const get = async (linkParts, queueStack) => {
 
       const folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
 
-      folderData.f.forEach(fileData => {
-        if (fileData.t !== 0) {
-          return
-        }
-        const file_key_enc = base64urlDecode(fileData.k.split(":")[1])
-        const file_key = aes_ecb_decrypt(file_key_enc, folderKey)
+      await Promise.all(
+        folderData.f.map(async fileData => {
+          if (fileData.t !== 0) {
+            return
+          }
+          const file_key_enc = base64urlDecode(fileData.k.split(":")[1])
+          const file_key = aes_ecb_decrypt(file_key_enc, folderKey)
 
-        const node_id = fileData.h
-        const node_data = await _api({ n: folderId }, { a: "g", g: 1, n: node_id })
-        await _getFile(node_data, file_key)
-      })
+          const node_id = fileData.h
+          const node_data = await _api({ n: folderId }, { a: "g", g: 1, n: node_id })
+          await _getFile(node_data, file_key)
+        })
+      )
       break
     default:
       throw new Error(`unknown mega link type ${linkType}`)

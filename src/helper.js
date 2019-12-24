@@ -14,7 +14,8 @@ const base64decode = input => Buffer.from(input, 'base64').toString()
 const base64urlEncode = input => base64encode(input.replace(/\+/g, "-").replace(/_/g, "/").replace(/=/g, ""))
 const base64urlDecode = input => base64decode(input.replace(/-/g, "+").replace(/\//g, "_").replace(/,/g, ""))
 
-const aesEcbDecrypt = input =>
+const aesEcbDecrypt = input => {}
+
 module.exports = {
   sleep,
   randomHex,
