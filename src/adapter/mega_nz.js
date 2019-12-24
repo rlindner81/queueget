@@ -27,14 +27,8 @@ const _api = async (params = null, data = null) => {
   if (!Array.isArray(data)) {
     data = [data]
   }
-  const response = await request({
-    method: "POST",
-    url: "https://g.api.mega.co.nz/cs",
-    params,
-    body: JSON.stringify(data)
-  })
-
-  return response.body
+  const response = await request("POST", "https://g.api.mega.co.nz/cs", params, data)
+  return response.data
 }
 
 // eslint-disable-next-line no-unused-vars

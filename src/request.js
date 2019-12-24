@@ -11,18 +11,18 @@ const { URL } = require("url")
 //   }, {})
 // }
 
-const request = (method = "GET", url, query, reqData, headers, resDataHandler) => {
-  const requestUrl = new URL(url)
+const request = (method = "GET", url, query, reqData, headers, resDataHandler) =>
+  new Promise((resolve, reject) => {
+    const requestUrl = new URL(url)
 
-  if (query instanceof Object) {
-    Object.entries(query).forEach(([key, value]) => {
-      requestUrl.searchParams.append(key, value)
-    })
-  }
+    if (query instanceof Object) {
+      Object.entries(query).forEach(([key, value]) => {
+        requestUrl.searchParams.append(key, value)
+      })
+    }
 
-  const requestOptions = { method, headers }
+    const requestOptions = { method, headers }
 
-  return new Promise((resolve, reject) => {
     // if (options.cookies) {
     //   options.headers.Cookie = Object.entries(options.cookies)
     //     .map(([key, value]) => key + "=" + querystring.escape(value))
@@ -41,17 +41,17 @@ const request = (method = "GET", url, query, reqData, headers, resDataHandler) =
         if (res.statusCode >= 400) {
           return reject(new Error(`request ${res.url} failed with status ${res.statusCode} (${res.statusMessage})`))
         }
+        const result = { headers: res.headers }
         const contentType = res.headers["content-type"]
 
         if (writtenBytes > 0) {
-          const resData = buffer.toString()
-          res.data = contentType === "application/json" ? JSON.parse(resData) : resData
+          result.data = contentType === "application/json" ? JSON.parse(buffer.toString()) : buffer.toString()
         }
         // if (result.headers["set-cookie"]) {
         //   result.cookies = parseSetCookie(result.headers["set-cookie"])
         // }
 
-        return resolve(res)
+        return resolve(result)
       })
     }
 
@@ -66,7 +66,6 @@ const request = (method = "GET", url, query, reqData, headers, resDataHandler) =
     req.on("error", reject)
     req.end()
   })
-}
 
 ;(async () => {
   const lala = await request("GET", "https://google.com?test=1", { a: 1 })
