@@ -1,6 +1,6 @@
 "use strict"
 
-const { base64urlDecode, aesEcbDecrypt, foldKey, aesCbcDecrypt } = require("../helper")
+const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher } = require("../helper")
 const request = require("../request")
 
 const LINK_TYPE = {
@@ -23,6 +23,15 @@ const LINK_TYPE = {
 // s: The size of the node
 // ts: The time of the last modification of the node
 
+const _foldKey = key => {
+  let result = Buffer.alloc(16, 0)
+  Buffer.from(key).forEach((c, i) => {
+    result[i % 16] ^= c
+  })
+  return result
+}
+
+
 const _api = async (params = null, data = null) => {
   if (!Array.isArray(data)) {
     data = [data]
@@ -33,7 +42,7 @@ const _api = async (params = null, data = null) => {
 
 const _decryptAttributes = (attributes, key) => {
   attributes = base64urlDecode(attributes)
-  attributes = aesCbcDecrypt(attributes, foldKey(key))
+  attributes = decrypt(aesCbcDecipher(_foldKey(key)), attributes)
   attributes = attributes.toString()
   if (attributes.slice(0, 4) !== "MEGA") {
     throw new Error("wrong attribute decryption")
@@ -43,6 +52,46 @@ const _decryptAttributes = (attributes, key) => {
 }
 
 const _downloadAndDecrypt = async (link, filename, key) => {
+  const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
+  key = _foldKey(key)
+
+  /*
+      iv = key[16:24] + '\0' * 8
+    key = fold_key(key)
+    log.debug("using enc_key: {}, enc_iv: {}".format(key.encode("hex"), iv.encode("hex")))
+
+    counter = Counter.new(128, initial_value=int(iv.encode('hex'), 16))
+    aes = AES.new(key, AES.MODE_CTR, counter=counter)
+    # WIP: try to deal with 104 connection reset by peer problem by decreasing overall size_limit.
+    # size_limit = 5000000000
+    size_limit = 500000000
+    total_loaded = 0
+
+    with open(filename, 'wb') as fout:
+        while True:
+            response = requests.get(url, stream=True, headers={"Range": "bytes={}-{}".format(total_loaded, total_loaded + size_limit - 1)})
+            if response.status_code == 509:
+                refresh_ip()
+                continue
+
+            content_length = int(response.headers["content-length"])
+            content_loaded = 0
+            dots = 0
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:  # filter out keep-alive new chunks
+                    fout.write(aes.decrypt(chunk))
+                    total_loaded += len(chunk)
+                    content_loaded += len(chunk)
+
+                    if content_loaded / float(content_length) * 100 > dots:
+                        dots += 1
+                        sys.stdout.write(".")
+                        sys.stdout.flush()
+            print ""
+
+            if content_length < size_limit:
+                break
+   */
   // stub
 }
 
@@ -75,7 +124,7 @@ const get = async linkParts => {
           }
           let fileKey = fileData.k.split(":")[1]
           fileKey = base64urlDecode(fileKey)
-          fileKey = aesEcbDecrypt(fileKey, folderKey)
+          fileKey = decrypt(aesEcbDecipher(fileKey), folderKey)
           const nodeId = fileData.h
           const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
           await _getFile(nodeData, fileKey)

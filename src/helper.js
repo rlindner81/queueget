@@ -24,31 +24,14 @@ const base64urlDecode = input =>
       .replace(/,/g, "")
   )
 
-const foldKey = key => {
-  let result = Buffer.alloc(16, 0)
-  Buffer.from(key).forEach((c, i) => {
-    result[i % 16] ^= c
-  })
-  return result
-}
-
-const aesEcbEncrypt = (data, key) => {
-  const cipher = crypto.createCipheriv("aes-128-ecb", key, null).setAutoPadding(false)
-  return Buffer.concat([cipher.update(data), cipher.final()])
-}
-const aesEcbDecrypt = (data, key) => {
-  const decipher = crypto.createDecipheriv("aes-128-ecb", key, null).setAutoPadding(false)
-  return Buffer.concat([decipher.update(data), decipher.final()])
-}
-
-const aesCbcEncrypt = (data, key) => {
-  const cipher = crypto.createCipheriv("aes-128-cbc", key, Buffer.alloc(16, 0)).setAutoPadding(false)
-  return Buffer.concat([cipher.update(data), cipher.final()])
-}
-const aesCbcDecrypt = (data, key) => {
-  const decipher = crypto.createDecipheriv("aes-128-cbc", key, Buffer.alloc(16, 0)).setAutoPadding(false)
-  return Buffer.concat([decipher.update(data), decipher.final()])
-}
+const aesEcbCipher = key => crypto.createCipheriv("aes-128-ecb", key, null).setAutoPadding(false)
+const aesEcbDecipher = key => crypto.createDecipheriv("aes-128-ecb", key, null).setAutoPadding(false)
+const aesCbcCipher = (key, iv = Buffer.alloc(16, 0)) => crypto.createCipheriv("aes-128-cbc", key, iv).setAutoPadding(false)
+const aesCbcDecipher = (key, iv = Buffer.alloc(16, 0)) => crypto.createDecipheriv("aes-128-cbc", key, iv).setAutoPadding(false)
+const aesCrtCipher = (key, iv) => crypto.createCipheriv("aes-128-crt", key, iv).setAutoPadding(false)
+const aesCrtDecipher = (key, iv) => crypto.createDecipheriv("aes-128-crt", key, iv).setAutoPadding(false)
+const encrypt = (cipher, data) => Buffer.concat([cipher.update(data), cipher.final()])
+const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
 module.exports = {
   sleep,
@@ -57,9 +40,12 @@ module.exports = {
   base64decode,
   base64urlDecode,
   base64urlEncode,
-  foldKey,
-  aesEcbEncrypt,
-  aesEcbDecrypt,
-  aesCbcEncrypt,
-  aesCbcDecrypt
+  aesEcbCipher,
+  aesEcbDecipher,
+  aesCbcCipher,
+  aesCbcDecipher,
+  aesCrtCipher,
+  aesCrtDecipher,
+  encrypt,
+  decrypt
 }
