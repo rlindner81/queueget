@@ -1,6 +1,6 @@
 "use strict"
 
-const { base64urlDecode, aesEcbDecrypt } = require("../helper")
+const { base64urlDecode, aesEcbDecrypt, foldKey, aesCbcDecrypt } = require("../helper")
 const request = require("../request")
 
 const LINK_TYPE = {
@@ -28,12 +28,30 @@ const _api = async (params = null, data = null) => {
     data = [data]
   }
   const response = await request("POST", "https://g.api.mega.co.nz/cs", params, data)
-  return response.data
+  return Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
 }
 
-// eslint-disable-next-line no-unused-vars
-const _getFile = async (data, key) => {
+const _decryptAttributes = (attributes, key) => {
+  attributes = base64urlDecode(attributes)
+  attributes = aesCbcDecrypt(attributes, foldKey(key))
+  attributes = attributes.toString()
+  if (attributes.slice(0, 4) !== "MEGA") {
+    throw new Error("wrong attribute decryption")
+  }
+  attributes = JSON.parse(attributes.slice(4).replace(/}.*?$/, "}"))
+  return attributes
+}
+
+const _downloadAndDecrypt = async (link, filename, key) => {
   // stub
+}
+
+const _getFile = async (data, key) => {
+  const link = data.g
+  const attributes = _decryptAttributes(data.at, key)
+  const filename = attributes.n
+  console.log(`downloading file: ${filename}`)
+  await _downloadAndDecrypt(link, filename, key)
 }
 
 const get = async linkParts => {
