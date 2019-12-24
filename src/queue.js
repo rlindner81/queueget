@@ -24,7 +24,7 @@ const queue = async (queueFile = "queue.txt", finishedFile = "queue_finished.txt
   const queueStack = newFileStack(queueFile)
   const finishedStack = newFileStack(finishedFile)
 
-  while (true) {
+  for (;;) {
     const entry = await queueStack.peek()
     if (entry === null) {
       break
@@ -34,7 +34,7 @@ const queue = async (queueFile = "queue.txt", finishedFile = "queue_finished.txt
       await queueStack.pop()
       continue
     }
-    const [, status, link] = match
+    const [, , link] = match
     const linkParts = url.parse(link)
     for (let retry = 1; retry <= retries; retry++) {
       try {

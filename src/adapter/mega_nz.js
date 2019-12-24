@@ -1,6 +1,6 @@
 "use strict"
 
-const { randomHex, base64urlDecode } = require("../helper")
+const { base64urlDecode, aesEcbDecrypt } = require("../helper")
 const request = require("../request")
 
 const LINK_TYPE = {
@@ -22,39 +22,41 @@ const _api = async (params = null, data = null) => {
   return response.body
 }
 
+// eslint-disable-next-line no-unused-vars
+const _getFile = async (data, key) => {
+  // stub
+}
 
-const get = async (linkParts, queueStack) => {
-  const identifier = await randomHex(4)
+const get = async linkParts => {
   const [linkType, linkId, linkKey] = linkParts.hash.split("!")
 
   switch (linkType) {
-    case LINK_TYPE.FILE:
-      const fileId = linkId
-      const fileKey = base64urlDecode(linkKey)
-
-      const fileData = await _api(null, { a: "g", g: 1, p: fileId })
+    case LINK_TYPE.FILE: {
+      let fileId = linkId
+      let fileKey = base64urlDecode(linkKey)
+      let fileData = await _api(null, { a: "g", g: 1, p: fileId })
       await _getFile(fileData, fileKey)
       break
-    case LINK_TYPE.FOLDER:
-      const folderId = linkId
-      const folderKey = base64urlDecode(linkKey)
-
-      const folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
-
+    }
+    case LINK_TYPE.FOLDER: {
+      let folderId = linkId
+      let folderKey = base64urlDecode(linkKey)
+      let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
       await Promise.all(
         folderData.f.map(async fileData => {
           if (fileData.t !== 0) {
             return
           }
-          const file_key_enc = base64urlDecode(fileData.k.split(":")[1])
-          const file_key = aes_ecb_decrypt(file_key_enc, folderKey)
-
-          const node_id = fileData.h
-          const node_data = await _api({ n: folderId }, { a: "g", g: 1, n: node_id })
-          await _getFile(node_data, file_key)
+          let fileKey = fileData.k.split(":")[1]
+          fileKey = base64urlDecode(fileKey)
+          fileKey = aesEcbDecrypt(fileKey, folderKey)
+          const nodeId = fileData.h
+          const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
+          await _getFile(nodeData, fileKey)
         })
       )
       break
+    }
     default:
       throw new Error(`unknown mega link type ${linkType}`)
   }
