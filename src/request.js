@@ -11,7 +11,7 @@ const { URL } = require("url")
 //   }, {})
 // }
 
-const request = (method = "GET", url, query, reqData, headers, resDataHandler) =>
+const request = (method = "GET", url, query, data, headers, resDataHandler) =>
   new Promise((resolve, reject) => {
     const requestUrl = new URL(url)
 
@@ -57,11 +57,11 @@ const request = (method = "GET", url, query, reqData, headers, resDataHandler) =
 
     const req = https.request(requestUrl, requestOptions, _resHandler)
 
-    if (reqData) {
-      if (reqData instanceof Object) {
-        reqData = JSON.stringify(reqData)
+    if (data) {
+      if (data instanceof Object) {
+        data = JSON.stringify(data)
       }
-      req.write(reqData)
+      req.write(data)
     }
     req.on("error", reject)
     req.end()
