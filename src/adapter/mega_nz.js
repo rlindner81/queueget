@@ -25,6 +25,11 @@ const LINK_TYPE = {
 // s: The size of the node
 // ts: The time of the last modification of the node
 
+const _refreshIp = async () => {
+  const i = 0
+  // stub
+}
+
 const _foldKey = key => {
   let result = Buffer.alloc(16, 0)
   Buffer.from(key).forEach((c, i) => {
@@ -56,64 +61,47 @@ const _downloadAndDecrypt = async (link, filename, key) => {
   const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
   key = _foldKey(key)
   const decipher = aesCtrDecipher(key, iv)
-  const sizeLimit = 500000000 // 0.5GB
+  const requestSizeLimit = 500000000 // 0.5GB
   let totalLoaded = 0
 
   const fileOut = createWriteStream(filename)
-  for (;;) {
+  for (; ;) {
     const response = await requestRaw({
       url: link,
-      headers: { Range: `bytes=${totalLoaded}-${totalLoaded + sizeLimit - 1}` }
+      headers: { Range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
     })
+
+    if (response.statusCode === 509) {
+      await _refreshIp()
+      continue
+    }
+
+    const [,contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/.exec(response.headers["content-range"])
+    const contentLength = parseInt(response.headers["content-length"])
+    let contentLoaded = 0
+    let dots = 0
+
     for await (const chunk of response) {
       const decrypted = decipher.update(chunk)
       if (!fileOut.write(decrypted)) {
         await once(fileOut, "drain") // Handle backpressure
       }
+      contentLoaded += decrypted.length
+
+      if (contentLoaded / contentLength * 100 > dots) {
+        dots++
+        process.stdout.write(".")
+      }
     }
-    fileOut.write(decipher.final())
-    fileOut.end()
-    const i = 0
+    totalLoaded += contentLoaded
+    process.stdout.write("\n")
+
+    if (contentRangeTo === totalLength) {
+      fileOut.write(decipher.final())
+      fileOut.end()
+      break
+    }
   }
-
-  /*
-      iv = key[16:24] + '\0' * 8
-    key = fold_key(key)
-    log.debug("using enc_key: {}, enc_iv: {}".format(key.encode("hex"), iv.encode("hex")))
-
-    counter = Counter.new(128, initial_value=int(iv.encode('hex'), 16))
-    aes = AES.new(key, AES.MODE_CTR, counter=counter)
-    # WIP: try to deal with 104 connection reset by peer problem by decreasing overall size_limit.
-    # size_limit = 5000000000
-    size_limit = 500000000
-    total_loaded = 0
-
-    with open(filename, 'wb') as fout:
-        while True:
-            response = requests.get(url, stream=True, headers={"Range": "bytes={}-{}".format(total_loaded, total_loaded + size_limit - 1)})
-            if response.status_code == 509:
-                refresh_ip()
-                continue
-
-            content_length = int(response.headers["content-length"])
-            content_loaded = 0
-            dots = 0
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:  # filter out keep-alive new chunks
-                    fout.write(aes.decrypt(chunk))
-                    total_loaded += len(chunk)
-                    content_loaded += len(chunk)
-
-                    if content_loaded / float(content_length) * 100 > dots:
-                        dots += 1
-                        sys.stdout.write(".")
-                        sys.stdout.flush()
-            print ""
-
-            if content_length < size_limit:
-                break
-   */
-  // stub
 }
 
 const _getFile = async (data, key) => {
