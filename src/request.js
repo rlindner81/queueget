@@ -19,7 +19,7 @@ const _toStr = input => {
   }
 }
 
-const requestRaw = ({ url, method = "GET", query, data, headers }) =>
+const requestRaw = ({ url, method, query, data, headers }) =>
   new Promise((resolve, reject) => {
     if (!url) {
       return resolve(null)
@@ -32,7 +32,11 @@ const requestRaw = ({ url, method = "GET", query, data, headers }) =>
       })
     }
 
-    const requestOptions = { method, headers }
+    const requestOptions = {
+      method: method ? method : data && data.length > 0 ? "POST" : "GET",
+      headers
+    }
+
     const req =
       requestUrl.protocol === "https:"
         ? https.request(requestUrl, requestOptions, resolve)
@@ -45,7 +49,7 @@ const requestRaw = ({ url, method = "GET", query, data, headers }) =>
     req.end()
   })
 
-const request = async ({ url, method = "GET", query, data, headers }) => {
+const request = async ({ url, method, query, data, headers }) => {
   const response = await requestRaw({ url, method, query, data, headers })
   let buffer = Buffer.alloc(0)
   for await (const chunk of response) {

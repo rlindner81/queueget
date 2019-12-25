@@ -11,6 +11,7 @@ const fritzCall = async command => {
 </s:Body>
 </s:Envelope>`
   const response = await request({
+    method: "POST",
     url: "http://fritz.box:49000/igdupnp/control/WANIPConn1",
     headers: {
       "content-type": "text/xml",
