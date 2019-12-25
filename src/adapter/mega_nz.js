@@ -71,6 +71,7 @@ const _downloadAndDecrypt = async (link, filename, key) => {
         await once(fileOut, "drain") // Handle backpressure
       }
     }
+    fileOut.write(decipher.final())
     fileOut.end()
     const i = 0
   }
