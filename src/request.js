@@ -46,28 +46,17 @@ const requestRaw = ({ url, method = "GET", query, data, headers }) =>
   })
 
 const request = async ({ url, method = "GET", query, data, headers }) => {
-  const res = await requestRaw({ url, method, query, data, headers })
-  return await new Promise(resolve => {
-    let buffer = Buffer.alloc(0)
-    let byteLength = 0
+  const response = await requestRaw({ url, method, query, data, headers })
+  let buffer = Buffer.alloc(0)
+  for await (const chunk of response) {
+    buffer = Buffer.concat([buffer, chunk])
+  }
 
-    res.on("data", resData => {
-      buffer = Buffer.concat([buffer, resData])
-      byteLength += resData.length
-    })
-
-    res.on("end", () => {
-      const { statusCode, statusMessage, headers } = res
-      const result = { statusCode, statusMessage, headers }
-      const contentType = res.headers["content-type"]
-
-      if (byteLength > 0) {
-        result.data = contentType === "application/json" ? JSON.parse(buffer.toString()) : buffer.toString()
-      }
-
-      return resolve(result)
-    })
-  })
+  const contentType = response.headers["content-type"]
+  if (buffer.length > 0) {
+    response.data = contentType === "application/json" ? JSON.parse(buffer.toString()) : buffer.toString()
+  }
+  return response
 }
 
 // ;(async () => {
