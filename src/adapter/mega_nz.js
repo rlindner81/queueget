@@ -1,6 +1,7 @@
 "use strict"
 
 const { createWriteStream } = require("fs")
+const { once } = require("events")
 const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
 const { request, requestRaw } = require("../request")
 
@@ -64,6 +65,12 @@ const _downloadAndDecrypt = async (link, filename, key) => {
       url: link,
       headers: { Range: `bytes=${totalLoaded}-${totalLoaded + sizeLimit - 1}` }
     })
+    for await (const chunk of response) {
+      const decrypted = decipher.update(chunk)
+      if (!fileOut.write(decrypted)) {
+        await once(response, "drain") // Handle backpressure
+      }
+    }
     //   ,
     //   resData => {
     //   const decrypted = decipher.update(resData)
