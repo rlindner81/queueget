@@ -5,8 +5,9 @@ const { createWriteStream } = require("fs")
 const { once } = require("events")
 const { promisify } = require("util")
 
-const { sleep, base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
+const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
 const { request, requestRaw } = require("../request")
+const { refreshIp } = require("../fritzbox")
 
 const finished = promisify(stream.finished)
 
@@ -29,11 +30,6 @@ const LINK_TYPE = {
 // k: The key of the node (used to encrypt its content and its attributes)
 // s: The size of the node
 // ts: The time of the last modification of the node
-
-const _refreshIp = async () => {
-  // const i = 0
-  // stub
-}
 
 const _foldKey = key => {
   let result = Buffer.alloc(16, 0)
@@ -73,17 +69,17 @@ const _downloadAndDecrypt = async (link, filename, key) => {
   let totalLoaded = 0
 
   const fileOut = createWriteStream(filename)
-  for (; ;) {
+  for (;;) {
     const response = await requestRaw({
       url: link,
       headers: { Range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
     })
 
     if (response.statusCode === 509) {
-      const timeLeft = parseFloat(response.headers["x-mega-time-left"])
-      console.log(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
-      await sleep(timeLeft)
-      // await _refreshIp()
+      // const timeLeft = parseFloat(response.headers["x-mega-time-left"])
+      // console.log(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
+      // await sleep(timeLeft)
+      await refreshIp()
       continue
     }
 
