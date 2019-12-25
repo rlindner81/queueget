@@ -68,14 +68,10 @@ const _downloadAndDecrypt = async (link, filename, key) => {
     for await (const chunk of response) {
       const decrypted = decipher.update(chunk)
       if (!fileOut.write(decrypted)) {
-        await once(response, "drain") // Handle backpressure
+        await once(fileOut, "drain") // Handle backpressure
       }
     }
-    //   ,
-    //   resData => {
-    //   const decrypted = decipher.update(resData)
-    //   let drain = !fileOut.write(decrypted)
-    // }
+    fileOut.end()
     const i = 0
   }
 
