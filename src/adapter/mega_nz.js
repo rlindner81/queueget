@@ -121,7 +121,7 @@ const _getFile = async (data, key) => {
   const attributes = _decryptAttributes(data.at, key)
   const filename = attributes.n
   console.log(`downloading file: ${filename}`)
-  await _downloadAndDecrypt(link, filename, key)
+  return _downloadAndDecrypt(link, filename, key)
 }
 
 const get = async linkParts => {
@@ -132,7 +132,8 @@ const get = async linkParts => {
       let fileId = linkId
       let fileKey = base64urlDecode(linkKey)
       let fileData = await _api(null, { a: "g", g: 1, p: fileId })
-      return await _getFile(fileData, fileKey)
+      await _getFile(fileData, fileKey)
+      break
     }
     case LINK_TYPE.FOLDER: {
       let folderId = linkId
