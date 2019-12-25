@@ -4,18 +4,20 @@ const { sleep } = require("./helper")
 const { request } = require("./request")
 
 const fritzCall = async command => {
+  const data = `<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body>
+<u:${command} xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1"></u:${command}>
+</s:Body>
+</s:Envelope>`
   const response = await request({
     url: "http://fritz.box:49000/igdupnp/control/WANIPConn1",
     headers: {
       "content-type": "text/xml",
+      "content-length": data.length,
       SOAPACTION: `urn:schemas-upnp-org:service:WANIPConnection:1#${command}`
     },
-    data: `<?xml version='1.0' encoding='utf-8'?>
-<s:Envelope s:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/' xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>
-  <s:Body>
-    <u:${command} xmlns:u='urn:schemas-upnp-org:service:WANIPConnection:1' />
-  </s:Body>
-</s:Envelope>`
+    data
   })
   return response.data
 }
