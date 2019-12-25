@@ -1,5 +1,6 @@
 "use strict"
 
+const http = require("http")
 const https = require("https")
 const { URL } = require("url")
 
@@ -38,10 +39,8 @@ const request = (method = "GET", url, query, data, headers, resDataHandler) =>
       }
       res.on("data", resDataHandler ? resDataHandler : bufferResDataHandler)
       res.on("end", () => {
-        if (res.statusCode >= 400) {
-          return reject(new Error(`request ${res.url} failed with status ${res.statusCode} (${res.statusMessage})`))
-        }
-        const result = { headers: res.headers }
+        const { statusCode, statusMessage, headers } = res
+        const result = { statusCode, statusMessage, headers }
         const contentType = res.headers["content-type"]
 
         if (writtenBytes > 0) {
@@ -55,7 +54,9 @@ const request = (method = "GET", url, query, data, headers, resDataHandler) =>
       })
     }
 
-    const req = https.request(requestUrl, requestOptions, _resHandler)
+    const req = requestUrl.protocol === "https:"
+      ? https.request(requestUrl, requestOptions, _resHandler)
+      : http.request(requestUrl, requestOptions, _resHandler)
 
     if (data) {
       if (data instanceof Object) {

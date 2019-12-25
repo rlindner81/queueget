@@ -1,6 +1,7 @@
 "use strict"
 
-const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher } = require("../helper")
+const { createWriteStream } = require("fs")
+const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
 const request = require("../request")
 
 const LINK_TYPE = {
@@ -54,6 +55,18 @@ const _decryptAttributes = (attributes, key) => {
 const _downloadAndDecrypt = async (link, filename, key) => {
   const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
   key = _foldKey(key)
+  const decipher = aesCtrDecipher(key, iv)
+  const sizeLimit = 500000000 // 0.5GB
+  let totalLoaded = 0
+
+  const fileOut = createWriteStream(filename)
+  for (; ;) {
+    const response = await request("GET", link, null, null, { Range: `bytes=${totalLoaded}-${totalLoaded + sizeLimit - 1}` }, resData => {
+      const decrypted = decipher.update(resData)
+      let drain = !fileOut.write(decrypted)
+    })
+    const i = 0
+  }
 
   /*
       iv = key[16:24] + '\0' * 8

@@ -24,13 +24,9 @@ const base64urlDecode = input =>
       .replace(/,/g, "")
   )
 
-const aesEcbCipher = key => crypto.createCipheriv("aes-128-ecb", key, null).setAutoPadding(false)
-const aesEcbDecipher = key => crypto.createDecipheriv("aes-128-ecb", key, null).setAutoPadding(false)
-const aesCbcCipher = (key, iv = Buffer.alloc(16, 0)) => crypto.createCipheriv("aes-128-cbc", key, iv).setAutoPadding(false)
-const aesCbcDecipher = (key, iv = Buffer.alloc(16, 0)) => crypto.createDecipheriv("aes-128-cbc", key, iv).setAutoPadding(false)
-const aesCrtCipher = (key, iv) => crypto.createCipheriv("aes-128-crt", key, iv).setAutoPadding(false)
-const aesCrtDecipher = (key, iv) => crypto.createDecipheriv("aes-128-crt", key, iv).setAutoPadding(false)
-const encrypt = (cipher, data) => Buffer.concat([cipher.update(data), cipher.final()])
+const aesEcbDecipher = (key, iv = null, autoPadding = false) => crypto.createDecipheriv("aes-128-ecb", key, iv).setAutoPadding(autoPadding)
+const aesCbcDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) => crypto.createDecipheriv("aes-128-cbc", key, iv).setAutoPadding(autoPadding)
+const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) => crypto.createDecipheriv("aes-128-ctr", key, iv).setAutoPadding(autoPadding)
 const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
 module.exports = {
@@ -40,12 +36,8 @@ module.exports = {
   base64decode,
   base64urlDecode,
   base64urlEncode,
-  aesEcbCipher,
   aesEcbDecipher,
-  aesCbcCipher,
   aesCbcDecipher,
-  aesCrtCipher,
-  aesCrtDecipher,
-  encrypt,
+  aesCtrDecipher,
   decrypt
 }
