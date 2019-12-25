@@ -1,9 +1,14 @@
 "use strict"
 
+const stream = require("stream")
 const { createWriteStream } = require("fs")
 const { once } = require("events")
-const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
+const { promisify } = require("util")
+
+const { sleep, base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
 const { request, requestRaw } = require("../request")
+
+const finished = promisify(stream.finished)
 
 const LINK_TYPE = {
   FILE: "#",
@@ -68,14 +73,17 @@ const _downloadAndDecrypt = async (link, filename, key) => {
   let totalLoaded = 0
 
   const fileOut = createWriteStream(filename)
-  for (;;) {
+  for (; ;) {
     const response = await requestRaw({
       url: link,
       headers: { Range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
     })
 
     if (response.statusCode === 509) {
-      await _refreshIp()
+      const timeLeft = parseFloat(response.headers["x-mega-time-left"])
+      console.log(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
+      await sleep(timeLeft)
+      // await _refreshIp()
       continue
     }
 
@@ -106,6 +114,7 @@ const _downloadAndDecrypt = async (link, filename, key) => {
     if (contentRangeTo + 1 === totalLength) {
       fileOut.write(decipher.final())
       fileOut.end()
+      await finished(fileOut)
       break
     }
   }

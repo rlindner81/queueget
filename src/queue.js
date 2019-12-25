@@ -41,7 +41,8 @@ const queue = async (queueFile = "queue.txt", finishedFile = "queue_finished.txt
         const adapter = _getAdapter(linkParts.hostname)
         console.info(`using adapter ${adapter.name} for ${link}`)
         await adapter.get(linkParts, queueStack)
-        await finishedStack.push(await queueStack.pop())
+        await queueStack.pop()
+        await finishedStack.push(entry)
         break
       } catch (err) {
         console.debug(err.stack || err.message)
