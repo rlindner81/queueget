@@ -135,8 +135,9 @@ const get = async linkParts => {
             return
           }
           let fileKey = fileData.k.split(":")[1]
-          fileKey = _foldKey(base64urlDecode(fileKey))
-          fileKey = decrypt(aesEcbDecipher(fileKey), folderKey)
+          fileKey = base64urlDecode(fileKey)
+          fileKey = decrypt(aesEcbDecipher(folderKey), fileKey)
+          fileKey = _foldKey(fileKey)
           const nodeId = fileData.h
           const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
           await _getFile(nodeData, fileKey)
