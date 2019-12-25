@@ -108,12 +108,12 @@ const _downloadAndDecrypt = async (link, filename, key) => {
     process.stdout.write("\n")
 
     if (contentRangeTo + 1 === totalLength) {
-      fileOut.write(decipher.final())
-      fileOut.end()
-      await finished(fileOut)
       break
     }
   }
+  fileOut.write(decipher.final())
+  fileOut.end()
+  await finished(fileOut)
 }
 
 const _getFile = async (data, key) => {
