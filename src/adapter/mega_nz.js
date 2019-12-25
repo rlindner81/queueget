@@ -138,19 +138,19 @@ const get = async linkParts => {
       let folderId = linkId
       let folderKey = base64urlDecode(linkKey)
       let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
-      return await Promise.all(
-        folderData.f.map(async fileData => {
-          if (fileData.t !== 0) {
-            return
-          }
-          let fileKey = fileData.k.split(":")[1]
-          fileKey = base64urlDecode(fileKey)
-          fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
-          const nodeId = fileData.h
-          const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
-          await _getFile(nodeData, fileKey)
-        })
-      )
+      // NOTE: I want to do these sequentially for now
+      for (const fileData of folderData.f) {
+        if (fileData.t !== 0) {
+          continue
+        }
+        let fileKey = fileData.k.split(":")[1]
+        fileKey = base64urlDecode(fileKey)
+        fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
+        const nodeId = fileData.h
+        const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
+        await _getFile(nodeData, fileKey)
+      }
+      break
     }
     default:
       throw new Error(`unknown mega link type ${linkType}`)
