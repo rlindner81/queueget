@@ -59,11 +59,6 @@ const request = async ({ url, method = "GET", query, data, headers }) => {
   return response
 }
 
-// ;(async () => {
-//   const lala = await request("GET", "https://google.com?test=1", { a: 1 })
-//   const i = 0
-// })()
-
 module.exports = {
   requestRaw,
   request
