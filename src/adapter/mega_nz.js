@@ -76,6 +76,7 @@ const _downloadAndDecrypt = async (link, filename, key) => {
       continue
     }
 
+    console.log(response.headers["content-range"])
     const [contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/
       .exec(response.headers["content-range"])
       .slice(1)
@@ -99,7 +100,7 @@ const _downloadAndDecrypt = async (link, filename, key) => {
     totalLoaded += contentLoaded
     process.stdout.write("\n")
 
-    if (contentRangeTo === totalLength) {
+    if (contentRangeTo + 1 === totalLength) {
       fileOut.write(decipher.final())
       fileOut.end()
       break
