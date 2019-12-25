@@ -26,7 +26,7 @@ const LINK_TYPE = {
 // ts: The time of the last modification of the node
 
 const _refreshIp = async () => {
-  const i = 0
+  // const i = 0
   // stub
 }
 
@@ -65,7 +65,7 @@ const _downloadAndDecrypt = async (link, filename, key) => {
   let totalLoaded = 0
 
   const fileOut = createWriteStream(filename)
-  for (; ;) {
+  for (;;) {
     const response = await requestRaw({
       url: link,
       headers: { Range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
@@ -76,8 +76,11 @@ const _downloadAndDecrypt = async (link, filename, key) => {
       continue
     }
 
-    const [,contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/.exec(response.headers["content-range"])
-    const contentLength = parseInt(response.headers["content-length"])
+    const [contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/
+      .exec(response.headers["content-range"])
+      .slice(1)
+      .map(parseFloat)
+    const contentLength = contentRangeTo - contentRangeFrom + 1
     let contentLoaded = 0
     let dots = 0
 
@@ -88,7 +91,7 @@ const _downloadAndDecrypt = async (link, filename, key) => {
       }
       contentLoaded += decrypted.length
 
-      if (contentLoaded / contentLength * 100 > dots) {
+      if ((contentLoaded / contentLength) * 100 > dots) {
         dots++
         process.stdout.write(".")
       }
