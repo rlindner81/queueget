@@ -4,73 +4,78 @@ const http = require("http")
 const https = require("https")
 const { URL } = require("url")
 
-// const parseSetCookie = setCookie => {
-//   return setCookie.reduce((result, cookie) => {
-//     cookie = cookie.split(";")[0].split("=")
-//     result[cookie[0]] = querystring.unescape(cookie[1])
-//     return result
-//   }, {})
-// }
+const _toStr = input => {
+  switch (typeof input) {
+    case "undefined":
+    case "symbol":
+    case "function":
+      return ""
+    case "string":
+      return input
+    case "object":
+      return input === null ? "" : JSON.stringify(input)
+    default:
+      return String(input)
+  }
+}
 
-const request = (method = "GET", url, query, data, headers, resDataHandler) =>
+const requestRaw = ({ url, method = "GET", query, data, headers }) =>
   new Promise((resolve, reject) => {
+    if (!url) {
+      return resolve(null)
+    }
     const requestUrl = new URL(url)
 
     if (query instanceof Object) {
       Object.entries(query).forEach(([key, value]) => {
-        requestUrl.searchParams.append(key, value)
+        requestUrl.searchParams.append(key, _toStr(value))
       })
     }
 
     const requestOptions = { method, headers }
-
-    // if (options.cookies) {
-    //   options.headers.Cookie = Object.entries(options.cookies)
-    //     .map(([key, value]) => key + "=" + querystring.escape(value))
-    //     .join("; ")
-    // }
-
-    const _resHandler = res => {
-      let buffer = Buffer.alloc(0)
-      let writtenBytes = 0
-      const bufferResDataHandler = resData => {
-        buffer = Buffer.concat([buffer, resData])
-        writtenBytes += resData.length
-      }
-      res.on("data", resDataHandler ? resDataHandler : bufferResDataHandler)
-      res.on("end", () => {
-        const { statusCode, statusMessage, headers } = res
-        const result = { statusCode, statusMessage, headers }
-        const contentType = res.headers["content-type"]
-
-        if (writtenBytes > 0) {
-          result.data = contentType === "application/json" ? JSON.parse(buffer.toString()) : buffer.toString()
-        }
-        // if (result.headers["set-cookie"]) {
-        //   result.cookies = parseSetCookie(result.headers["set-cookie"])
-        // }
-
-        return resolve(result)
-      })
-    }
-
-    const req = requestUrl.protocol === "https:"
-      ? https.request(requestUrl, requestOptions, _resHandler)
-      : http.request(requestUrl, requestOptions, _resHandler)
+    const req =
+      requestUrl.protocol === "https:"
+        ? https.request(requestUrl, requestOptions, resolve)
+        : http.request(requestUrl, requestOptions, resolve)
 
     if (data) {
-      if (data instanceof Object) {
-        data = JSON.stringify(data)
-      }
-      req.write(data)
+      req.write(data instanceof Buffer ? data : _toStr(data))
     }
     req.on("error", reject)
     req.end()
   })
 
-;(async () => {
-  const lala = await request("GET", "https://google.com?test=1", { a: 1 })
-  const i = 0
-})()
+const request = async ({ url, method = "GET", query, data, headers }) => {
+  const res = await requestRaw({ url, method, query, data, headers })
+  return await new Promise(resolve => {
+    let buffer = Buffer.alloc(0)
+    let byteLength = 0
 
-module.exports = request
+    res.on("data", resData => {
+      buffer = Buffer.concat([buffer, resData])
+      byteLength += resData.length
+    })
+
+    res.on("end", () => {
+      const { statusCode, statusMessage, headers } = res
+      const result = { statusCode, statusMessage, headers }
+      const contentType = res.headers["content-type"]
+
+      if (byteLength > 0) {
+        result.data = contentType === "application/json" ? JSON.parse(buffer.toString()) : buffer.toString()
+      }
+
+      return resolve(result)
+    })
+  })
+}
+
+// ;(async () => {
+//   const lala = await request("GET", "https://google.com?test=1", { a: 1 })
+//   const i = 0
+// })()
+
+module.exports = {
+  requestRaw,
+  request
+}

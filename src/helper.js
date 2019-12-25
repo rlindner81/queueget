@@ -24,9 +24,12 @@ const base64urlDecode = input =>
       .replace(/,/g, "")
   )
 
-const aesEcbDecipher = (key, iv = null, autoPadding = false) => crypto.createDecipheriv("aes-128-ecb", key, iv).setAutoPadding(autoPadding)
-const aesCbcDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) => crypto.createDecipheriv("aes-128-cbc", key, iv).setAutoPadding(autoPadding)
-const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) => crypto.createDecipheriv("aes-128-ctr", key, iv).setAutoPadding(autoPadding)
+const aesEcbDecipher = (key, iv = null, autoPadding = false) =>
+  crypto.createDecipheriv("aes-128-ecb", key, iv).setAutoPadding(autoPadding)
+const aesCbcDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) =>
+  crypto.createDecipheriv("aes-128-cbc", key, iv).setAutoPadding(autoPadding)
+const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) =>
+  crypto.createDecipheriv("aes-128-ctr", key, iv).setAutoPadding(autoPadding)
 const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
 module.exports = {

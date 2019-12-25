@@ -2,7 +2,7 @@
 
 const { createWriteStream } = require("fs")
 const { base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
-const request = require("../request")
+const { request, requestRaw } = require("../request")
 
 const LINK_TYPE = {
   FILE: "#",
@@ -32,12 +32,11 @@ const _foldKey = key => {
   return result
 }
 
-
-const _api = async (params = null, data = null) => {
+const _api = async (query = null, data = null) => {
   if (!Array.isArray(data)) {
     data = [data]
   }
-  const response = await request("POST", "https://g.api.mega.co.nz/cs", params, data)
+  const response = await request({ method: "POST", url: "https://g.api.mega.co.nz/cs", query, data })
   return Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
 }
 
@@ -60,11 +59,16 @@ const _downloadAndDecrypt = async (link, filename, key) => {
   let totalLoaded = 0
 
   const fileOut = createWriteStream(filename)
-  for (; ;) {
-    const response = await request("GET", link, null, null, { Range: `bytes=${totalLoaded}-${totalLoaded + sizeLimit - 1}` }, resData => {
-      const decrypted = decipher.update(resData)
-      let drain = !fileOut.write(decrypted)
+  for (;;) {
+    const response = await requestRaw({
+      url: link,
+      headers: { Range: `bytes=${totalLoaded}-${totalLoaded + sizeLimit - 1}` }
     })
+    //   ,
+    //   resData => {
+    //   const decrypted = decipher.update(resData)
+    //   let drain = !fileOut.write(decrypted)
+    // }
     const i = 0
   }
 
