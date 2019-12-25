@@ -43,7 +43,11 @@ const _api = async (query = null, data = null) => {
     data = [data]
   }
   const response = await request({ method: "POST", url: "https://g.api.mega.co.nz/cs", query, data })
-  return Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
+  const result = Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
+  if (typeof result === "number" && result < 0) {
+    throw new Error(`file does exist`)
+  }
+  return result
 }
 
 const _decryptAttributes = (attributes, key) => {
