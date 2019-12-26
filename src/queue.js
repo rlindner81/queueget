@@ -14,7 +14,7 @@ const _getAdapter = hostname => {
     return require(adapterFilePath)
   } catch (err) {
     if (err.code === "MODULE_NOT_FOUND") {
-      return require(`./adapter/_fallback`)
+      return require(`./src/hoster`)
     }
     throw err
   }
