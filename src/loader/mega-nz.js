@@ -45,7 +45,7 @@ const _api = async (query = null, data = null) => {
   const response = await request({ method: "POST", url: "https://g.api.mega.co.nz/cs", query, data })
   const result = Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
   if (typeof result === "number" && result < 0) {
-    throw new Error(`file does exist`)
+    throw new Error(`file does not exist`)
   }
   return result
 }
@@ -92,9 +92,9 @@ const create = (queueStack, router) => {
         .slice(1)
         .map(parseFloat)
       if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
-        console.log(`recieving ${totalLength} bytes`)
+        console.log(`receiving ${totalLength} bytes`)
       } else {
-        console.log(`recieving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
+        console.log(`receiving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
       }
 
       const contentLength = contentRangeTo - contentRangeFrom + 1
