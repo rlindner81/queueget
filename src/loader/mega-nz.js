@@ -87,11 +87,16 @@ const create = (queueStack, router) => {
         continue
       }
 
-      console.log(response.headers["content-range"])
       const [contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/
         .exec(response.headers["content-range"])
         .slice(1)
         .map(parseFloat)
+      if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
+        console.log(`recieving ${totalLength} bytes`)
+      } else {
+        console.log(`recieving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
+      }
+
       const contentLength = contentRangeTo - contentRangeFrom + 1
       let contentLoaded = 0
       let dots = 0
@@ -124,7 +129,7 @@ const create = (queueStack, router) => {
     const link = data.g
     const attributes = _decryptAttributes(data.at, key)
     const filename = attributes.n
-    console.log(`downloading file ${filename}`)
+    console.log(`loading file ${filename}`)
     return _downloadAndDecrypt(link, filename, key)
   }
 
