@@ -1,7 +1,7 @@
 "use strict"
 
-const { sleep } = require("./helper")
-const { request } = require("./request")
+const { sleep } = require("../helper")
+const { request } = require("../request")
 
 const fritzCall = async command => {
   const data = `<?xml version="1.0" encoding="utf-8"?>
