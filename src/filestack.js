@@ -2,7 +2,7 @@
 
 const { readFile, writeFile, copyFile } = require("fs").promises
 
-const newFileStack = filepath => {
+const newFilestack = filepath => {
   const flush = async lines => {
     try {
       await writeFile(filepath, lines.join("\n"))
@@ -77,4 +77,4 @@ const newFileStack = filepath => {
   }
 }
 
-module.exports = newFileStack
+module.exports = newFilestack

@@ -12,5 +12,5 @@ const { queue } = require("../src/")
 // })
 
 ;(async () => {
-  await queue()
+  await queue({})
 })()

@@ -1,46 +1,52 @@
 "use strict"
 
-const url = require("url")
-const newFileStack = require("./fileStack")
+const _url = require("url")
+const newFilestack = require("./filestack")
 const { sleep } = require("./helper")
+const hosters = require("./hoster")
+const routers = require("./router")
 
 const RETRY_FREQUENCY = 60
-
 // TODO options => parallel != 1 for parallel processing of queue
 
-const _getAdapter = hostname => {
-  const adapterFilePath = `./adapter/${hostname.replace(/\W/g, "_")}`
-  try {
-    return require(adapterFilePath)
-  } catch (err) {
-    if (err.code === "MODULE_NOT_FOUND") {
-      return require(`./src/hoster`)
-    }
-    throw err
-  }
-}
+const _getAdapter = (name, collection) =>
+  Object.prototype.hasOwnProperty.call(collection, name)
+    ? collection[name]
+    : Object.prototype.hasOwnProperty.call(collection, "fallback")
+    ? collection.fallback
+    : null
 
-const queue = async (queueFile = "queue.txt", finishedFile = "queue_finished.txt", retries = 5) => {
-  const queueStack = newFileStack(queueFile)
-  const finishedStack = newFileStack(finishedFile)
+const queue = async ({
+  queueFile = "queue.txt",
+  finishedFile = "queue_finished.txt",
+  retries = 5,
+  routername = "fritz.box"
+}) => {
+  const queueStack = newFilestack(queueFile)
+  const finishedStack = newFilestack(finishedFile)
+  const router = _getAdapter(routername, routers)
 
+  console.log(`using queue ${queueFile}`)
+  console.log(`using finished ${finishedFile}`)
+  console.log(`using router: ${router.name}`)
   for (;;) {
     const entry = await queueStack.peek()
     if (entry === null) {
       break
     }
-    const match = /^(?:(\w+)\s+)?(https?:\/\/.+)$/.exec(entry)
+    const match = /https?:\/\/\S+/.exec(entry)
     if (match === null) {
       await queueStack.pop()
       continue
     }
-    const [, , link] = match
-    const linkParts = url.parse(link)
+    const [url] = match
+    const urlParts = _url.parse(url)
+    const { hostname } = urlParts
     for (let retry = 1; retry <= retries; retry++) {
       try {
-        const adapter = _getAdapter(linkParts.hostname)
-        console.info(`using adapter ${adapter.name} for ${link}`)
-        await adapter.get(linkParts, queueStack)
+        const hoster = _getAdapter(hostname, hosters)
+        console.info(`using hoster ${hoster.name} for ${url}`)
+        await hoster.init(queueStack, router).run(url, urlParts)
         await queueStack.pop()
         await finishedStack.push(entry)
         break

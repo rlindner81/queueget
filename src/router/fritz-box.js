@@ -31,5 +31,6 @@ const refreshIp = async () => {
 }
 
 module.exports = {
+  name: __filename.slice(__dirname.length + 1, -3),
   refreshIp
 }
