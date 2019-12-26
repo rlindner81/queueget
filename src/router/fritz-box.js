@@ -24,7 +24,6 @@ const fritzCall = async command => {
 }
 
 const refreshIp = async () => {
-  console.info("refreshing ip")
   await fritzCall("ForceTermination")
   await fritzCall("RequestConnection")
   await sleep(20)

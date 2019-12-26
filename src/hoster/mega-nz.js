@@ -77,6 +77,7 @@ const newLoader = (queueStack, router) => {
 
       if (response.statusCode === 509) {
         if (router) {
+          console.info("bandwidth limit exceeded refreshing ip")
           await router.refreshIp()
         } else {
           const timeLeft = parseFloat(response.headers["x-mega-time-left"])
@@ -123,7 +124,7 @@ const newLoader = (queueStack, router) => {
     const link = data.g
     const attributes = _decryptAttributes(data.at, key)
     const filename = attributes.n
-    console.log(`downloading file: ${filename}`)
+    console.log(`downloading file ${filename}`)
     return _downloadAndDecrypt(link, filename, key)
   }
 

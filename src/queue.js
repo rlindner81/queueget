@@ -27,8 +27,7 @@ const queue = async ({
   const router = _getAdapter(routername, routers)
 
   console.log(`using queue ${queueFile}`)
-  console.log(`using finished ${finishedFile}`)
-  console.log(`using router: ${router.name}`)
+  console.log(`using router ${router.name}`)
   for (;;) {
     const entry = await queueStack.peek()
     if (entry === null) {
@@ -46,7 +45,7 @@ const queue = async ({
       try {
         const hoster = _getAdapter(hostname, hosters)
         console.info(`using hoster ${hoster.name} for ${url}`)
-        await hoster.init(queueStack, router).run(url, urlParts)
+        await hoster.newLoader(queueStack, router).load(url, urlParts)
         await queueStack.pop()
         await finishedStack.push(entry)
         break
