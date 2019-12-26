@@ -50,7 +50,7 @@ const queue = async ({
       try {
         const loader = _getAdapter(hostname, loaders)
         console.info(`using hoster ${loader.name} for ${url}`)
-        await loader.create(queueStack, router).load(url, urlParts)
+        await loader.load(url, urlParts, queueStack, router)
         await queueStack.pop()
         await historyStack.push(entry)
         break

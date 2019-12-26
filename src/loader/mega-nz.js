@@ -45,7 +45,7 @@ const _api = async (query = null, data = null) => {
   const response = await request({ method: "POST", url: "https://g.api.mega.co.nz/cs", query, data })
   const result = Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
   if (typeof result === "number" && result < 0) {
-    throw new Error(`file does not exist`)
+    throw new Error("file does not exist")
   }
   return result
 }
@@ -55,13 +55,14 @@ const _decryptAttributes = (attributes, key) => {
   attributes = decrypt(aesCbcDecipher(_foldKey(key)), attributes)
   attributes = attributes.toString()
   if (attributes.slice(0, 4) !== "MEGA") {
-    throw new Error("wrong attribute decryption")
+    throw new Error("failed attribute decryption")
   }
   attributes = JSON.parse(attributes.slice(4).replace(/}.*?$/, "}"))
   return attributes
 }
 
-const create = (queueStack, router) => {
+const load = async (url, urlParts, queueStack, router) => {
+
   const _downloadAndDecrypt = async (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)
@@ -133,44 +134,40 @@ const create = (queueStack, router) => {
     return _downloadAndDecrypt(link, filename, key)
   }
 
-  const load = async (url, urlParts) => {
-    const [linkType, linkId, linkKey] = urlParts.hash.split("!")
+  const [linkType, linkId, linkKey] = urlParts.hash.split("!")
 
-    switch (linkType) {
-      case LINK_TYPE.FILE: {
-        let fileId = linkId
-        let fileKey = base64urlDecode(linkKey)
-        let fileData = await _api(null, { a: "g", g: 1, p: fileId })
-        await _getFile(fileData, fileKey)
-        break
-      }
-      case LINK_TYPE.FOLDER: {
-        let folderId = linkId
-        let folderKey = base64urlDecode(linkKey)
-        let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
-        // NOTE: I want to do these sequentially for now
-        for (const fileData of folderData.f) {
-          if (fileData.t !== 0) {
-            continue
-          }
-          let fileKey = fileData.k.split(":")[1]
-          fileKey = base64urlDecode(fileKey)
-          fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
-          const nodeId = fileData.h
-          const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
-          await _getFile(nodeData, fileKey)
-        }
-        break
-      }
-      default:
-        throw new Error(`unknown mega link type ${linkType}`)
+  switch (linkType) {
+    case LINK_TYPE.FILE: {
+      let fileId = linkId
+      let fileKey = base64urlDecode(linkKey)
+      let fileData = await _api(null, { a: "g", g: 1, p: fileId })
+      await _getFile(fileData, fileKey)
+      break
     }
+    case LINK_TYPE.FOLDER: {
+      let folderId = linkId
+      let folderKey = base64urlDecode(linkKey)
+      let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
+      // NOTE: I want to do these sequentially for now
+      for (const fileData of folderData.f) {
+        if (fileData.t !== 0) {
+          continue
+        }
+        let fileKey = fileData.k.split(":")[1]
+        fileKey = base64urlDecode(fileKey)
+        fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
+        const nodeId = fileData.h
+        const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
+        await _getFile(nodeData, fileKey)
+      }
+      break
+    }
+    default:
+      throw new Error(`unknown mega link type ${linkType}`)
   }
-
-  return { load }
 }
 
 module.exports = {
   name: __filename.slice(__dirname.length + 1, -3),
-  create
+  load
 }
