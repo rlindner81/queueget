@@ -18,16 +18,21 @@ const _getAdapter = (name, collection) =>
 
 const queue = async ({
   queueFile = "queue.txt",
-  finishedFile = "queue_finished.txt",
+  historyFile = "queue_history.txt",
   retries = 5,
   routername = "fritz.box"
 }) => {
-  const queueStack = newFilestack(queueFile)
-  const finishedStack = newFilestack(finishedFile)
   const router = _getAdapter(routername, routers)
+  if (router != null) {
+    console.log(`using router ${router.name}`)
+  }
 
-  console.log(`using queue ${queueFile}`)
-  console.log(`using router ${router.name}`)
+  const queueStack = newFilestack(queueFile)
+  console.log(`loading queue ${queueFile} (${await queueStack.size()})`)
+
+  const historyStack = newFilestack(historyFile)
+  console.log(`saving history ${historyFile} (${await historyStack.size()})`)
+
   for (;;) {
     const entry = await queueStack.peek()
     if (entry === null) {
@@ -45,9 +50,9 @@ const queue = async ({
       try {
         const loader = _getAdapter(hostname, loaders)
         console.info(`using hoster ${loader.name} for ${url}`)
-        await loader.newLoader(queueStack, router).load(url, urlParts)
+        await loader.create(queueStack, router).load(url, urlParts)
         await queueStack.pop()
-        await finishedStack.push(entry)
+        await historyStack.push(entry)
         break
       } catch (err) {
         console.debug(err.stack || err.message)

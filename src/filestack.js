@@ -50,6 +50,11 @@ const newFilestack = filepath => {
     return lines.pop()
   }
 
+  const size = async () => {
+    const lines = await unflush()
+    return lines.length
+  }
+
   const backup = async backupFilepath => {
     try {
       await copyFile(filepath, backupFilepath)
@@ -72,6 +77,7 @@ const newFilestack = filepath => {
     push,
     pop,
     peek,
+    size,
     backup,
     restore
   }
