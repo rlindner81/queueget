@@ -3,7 +3,7 @@
 const _url = require("url")
 const newFilestack = require("./filestack")
 const { sleep } = require("./helper")
-const hosters = require("./hoster")
+const loaders = require("./loader")
 const routers = require("./router")
 
 const RETRY_FREQUENCY = 60
@@ -43,9 +43,9 @@ const queue = async ({
     const { hostname } = urlParts
     for (let retry = 1; retry <= retries; retry++) {
       try {
-        const hoster = _getAdapter(hostname, hosters)
-        console.info(`using hoster ${hoster.name} for ${url}`)
-        await hoster.newLoader(queueStack, router).load(url, urlParts)
+        const loader = _getAdapter(hostname, loaders)
+        console.info(`using hoster ${loader.name} for ${url}`)
+        await loader.newLoader(queueStack, router).load(url, urlParts)
         await queueStack.pop()
         await finishedStack.push(entry)
         break

@@ -61,7 +61,7 @@ const _decryptAttributes = (attributes, key) => {
   return attributes
 }
 
-const newLoader = (queueStack, router) => {
+const create = (queueStack, router) => {
   const _downloadAndDecrypt = async (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)
@@ -167,5 +167,5 @@ const newLoader = (queueStack, router) => {
 
 module.exports = {
   name: __filename.slice(__dirname.length + 1, -3),
-  newLoader
+  create
 }
