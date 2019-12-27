@@ -10,22 +10,22 @@ npm install queueget --global
 Say you want to download a movie via some link and while it is loading you find another link you like. The point
 of QueueGet is that you can just add new links to the queue file that it uses and it will keep on downloading. QueueGet 
 has some convenience features, such as 
-* Continuing broken downloads where they stopped
+* Continuing broken downloads where they stopped WIP
 * Adapters for preprocessing links from file hosters
 * IP refreshing when possible
 
 ## Usage
 ```
-usage: qget [--help] [--queue QUEUE_FILE]
+usage: qget [<options>]
 
-arguments:
-  --help                show this help and exit
-  --queue QUEUE_FILE    file with links queued for download (defaults to queue.txt)
+options:
+  --queue FILE       links to download (defaults to queue.txt)
+  --history FILE     links of the past (defaults to queue_history.txt)
+  --restore FILE     links to restore before starting (debugging)
+  --retries NUMBER   number of retries for failing downloads (defaults to 3)
+  --router TYPE      router for ip refreshing (defaults to fritzbox)
 ```
-
-Just run qget either direcly or daemonized.
 
 ## TODO
 
 * run as daemon. can it kill previous daemons?
-* configuration probably via env variables?
