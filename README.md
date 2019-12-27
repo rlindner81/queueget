@@ -24,6 +24,7 @@ options:
   --restore FILE     links to restore before starting (debugging)
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --router TYPE      router for ip refreshing (defaults to fritzbox)
+
 ```
 
 ## TODO
