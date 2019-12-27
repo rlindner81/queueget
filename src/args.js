@@ -6,11 +6,11 @@ const usage = () => `
 usage: qget [<options>]
 
 options:
-  --queue-file    links to download (defaults to queue.txt)
-  --history-file  links of the past (defaults to queue_history.txt)
-  --restore-file  links to restore before starting (debugging)
-  --retries       number of retries for failing downloads (defaults to 3)
-  --router        router for ip refreshing (defaults to fritzbox)
+  --queue FILE       links to download (defaults to queue.txt)
+  --history FILE     links of the past (defaults to queue_history.txt)
+  --restore FILE     links to restore before starting (debugging)
+  --retries NUMBER   number of retries for failing downloads (defaults to 3)
+  --router TYPE      router for ip refreshing (defaults to fritzbox)
 `
 
 const _unquoteArg = arg => {
@@ -23,26 +23,32 @@ const parseArgs = args => {
   let restoreFile = null
   let retries = 3
   let routername = "fritzbox"
+  let help = false
 
   let parsedOptions = 0
   const rest = args
     .join(" ")
     .trim()
     .replace(
-      /--(queue-file|history-file|restore-file|retries|router)\s*(.*?)\s*(?=$|--(?:queue-file|history-file|restore-file|retries|router))/g,
+      /--(help|queue|history|restore|retries|router)\s*(.*?)\s*(?=$|--(?:help|queue|history|restore|retries|router))/g,
       (_, option, arg) => {
         const unquotedArg = _unquoteArg(arg)
         parsedOptions++
+
+        if (option === "help") {
+          help = true
+          return ""
+        }
         assert(unquotedArg.length !== 0, `${ordinal(parsedOptions)} option --${option} has no associated argument`)
 
         switch (option) {
-          case "queue-file":
+          case "queue":
             queueFile = unquotedArg
             break
-          case "history-file":
+          case "history":
             historyFile = unquotedArg
             break
-          case "restore-file":
+          case "restore":
             restoreFile = unquotedArg
             break
           case "retries":
@@ -60,7 +66,7 @@ const parseArgs = args => {
     )
   assert(rest.length === 0, `missed (partial) arguments '${rest}'`)
 
-  return { queueFile, historyFile, restoreFile, retries, routername }
+  return { help, queueFile, historyFile, restoreFile, retries, routername }
 }
 
 module.exports = {
