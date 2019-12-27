@@ -21,7 +21,7 @@ const queue = async ({
   historyFile = "queue_history.txt",
   restoreFile = null,
   // restoreFile = "queue_backup.txt",
-  retries = 5,
+  retries = 3,
   routername = "fritz.box"
 }) => {
   const router = _getAdapter(routername, routers)
@@ -52,21 +52,24 @@ const queue = async ({
     const [url] = match
     const urlParts = _url.parse(url)
     const { hostname } = urlParts
-    for (let retry = 1; retry <= retries; retry++) {
+    for (let retry = 1;;) {
       try {
         const loader = _getAdapter(hostname, loaders)
         console.info(`using hoster ${loader.name} for ${url}`)
         await loader.load(url, urlParts, queueStack, router)
-        await queueStack.pop()
-        await historyStack.push(entry)
         break
       } catch (err) {
         console.debug(err.stack || err.message)
-        console.warn(`waiting ${RETRY_FREQUENCY}sec to retry`)
-        await sleep(RETRY_FREQUENCY)
+        if (++retry <= retries) {
+          console.warn(`waiting ${RETRY_FREQUENCY}sec for try ${retry} or ${retries}`)
+          await sleep(RETRY_FREQUENCY)
+        } else {
+          break
+        }
       }
-      console.log(`try #${retry}`)
     }
+    await queueStack.pop()
+    await historyStack.push(entry)
   }
 }
 
