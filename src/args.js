@@ -35,7 +35,7 @@ const parseArgs = args => {
         parsedOptions++
         assert(unquotedArg.length !== 0, `${ordinal(parsedOptions)} option --${option} has no associated argument`)
 
-        switch(option) {
+        switch (option) {
           case "queue-file":
             queueFile = unquotedArg
             break

@@ -62,7 +62,6 @@ const _decryptAttributes = (attributes, key) => {
 }
 
 const load = async (url, urlParts, queueStack, router) => {
-
   const _downloadAndDecrypt = async (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)

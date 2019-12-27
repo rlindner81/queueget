@@ -16,7 +16,13 @@ const _getAdapter = (name, collection) =>
     ? collection.fallback
     : null
 
-const queue = async ({ queueFile, historyFile, restoreFile, retries, routername }) => {
+const queue = async ({
+  queueFile = "queue.txt",
+  historyFile = "queue_history.txt",
+  restoreFile,
+  retries = 3,
+  routername
+}) => {
   const router = _getAdapter(routername, routers)
   if (router != null) {
     console.log(`using router ${router.name}`)
@@ -45,7 +51,7 @@ const queue = async ({ queueFile, historyFile, restoreFile, retries, routername 
     const [url] = match
     const urlParts = _url.parse(url)
     const { hostname } = urlParts
-    for (let retry = 1;;) {
+    for (let retry = 1; ; ) {
       try {
         const loader = _getAdapter(hostname, loaders)
         console.info(`using hoster ${loader.name} for ${url}`)
