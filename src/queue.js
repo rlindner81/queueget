@@ -7,7 +7,6 @@ const loaders = require("./loader")
 const routers = require("./router")
 
 const RETRY_FREQUENCY = 60
-// TODO options => parallel != 1 for parallel processing of queue
 
 const _getAdapter = (name, collection) =>
   Object.prototype.hasOwnProperty.call(collection, name)
