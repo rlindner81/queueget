@@ -104,7 +104,7 @@ const load = async (url, urlParts, queueStack, router) => {
       for await (const chunk of response) {
         const decrypted = decipher.update(chunk)
         if (!fileOut.write(decrypted)) {
-          await once(fileOut, "drain") // Handle backpressure
+          await once(fileOut, "drain")
         }
         contentLoaded += decrypted.length
 
