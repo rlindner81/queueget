@@ -21,7 +21,7 @@ usage: qget [<options>]
 options:
   --queue FILE       links to download (defaults to queue.txt)
   --history FILE     links of the past (defaults to queue_history.txt)
-  --restore FILE     links to restore before starting (debugging)
+  --restore FILE     restore queue before starting for debugging
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --router TYPE      router for ip refreshing (defaults to fritzbox)
 
