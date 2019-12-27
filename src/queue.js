@@ -19,6 +19,8 @@ const _getAdapter = (name, collection) =>
 const queue = async ({
   queueFile = "queue.txt",
   historyFile = "queue_history.txt",
+  restoreFile = null,
+  // restoreFile = "queue_backup.txt",
   retries = 5,
   routername = "fritz.box"
 }) => {
@@ -28,6 +30,10 @@ const queue = async ({
   }
 
   const queueStack = newFilestack(queueFile)
+  if (restoreFile !== null) {
+    await queueStack.restore(restoreFile)
+    console.log(`restored queue ${restoreFile}`)
+  }
   console.log(`loading queue ${queueFile} (${await queueStack.size()})`)
 
   const historyStack = newFilestack(historyFile)

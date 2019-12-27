@@ -42,11 +42,13 @@ const requestRaw = ({ url, method, query, data, headers }) =>
         ? https.request(requestUrl, requestOptions, resolve)
         : http.request(requestUrl, requestOptions, resolve)
 
-    if (data) {
-      req.write(data instanceof Buffer ? data : _toStr(data))
-    }
     req.on("error", reject)
-    req.end()
+
+    if (data) {
+      req.end(Buffer.isBuffer(data) ? data : Buffer.from(_toStr(data)))
+    } else {
+      req.end()
+    }
   })
 
 const request = async ({ url, method, query, data, headers }) => {
