@@ -1,6 +1,11 @@
 "use strict"
 
-const { readFile, writeFile, copyFile } = require("fs").promises
+const fs = require("fs")
+const { promisify } = require("util")
+
+const readFile = promisify(fs.readFile)
+const writeFile = promisify(fs.writeFile)
+const copyFile = promisify(fs.copyFile)
 
 const newFilestack = filepath => {
   const flush = async lines => {
