@@ -73,7 +73,7 @@ const load = async (url, urlParts, queueStack, router) => {
     for (;;) {
       const response = await requestRaw({
         url: link,
-        headers: { Range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
+        headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
       })
 
       if (response.statusCode === 509) {
