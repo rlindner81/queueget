@@ -26,8 +26,3 @@ options:
   --router TYPE      router for ip refreshing (defaults to fritzbox)
 
 ```
-
-## TODO
-
-* tests
-* run as daemon. can it kill previous instances?
