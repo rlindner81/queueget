@@ -1,0 +1,86 @@
+"use strict"
+
+const { readFile, writeFile, copyFile } = require("fs").promises
+
+const newFilestack = filepath => {
+  const flush = async lines => {
+    try {
+      await writeFile(filepath, lines.join("\n"))
+    } catch (err) {
+      console.error(`could not write filepath ${filepath}: ${err.message}`)
+    }
+  }
+
+  const unflush = async () => {
+    try {
+      const data = (await readFile(filepath)).toString()
+      return data
+        .split("\n")
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        throw err
+      }
+      return []
+    }
+  }
+
+  const push = async (value, index = 0) => {
+    const lines = await unflush()
+    lines.splice(index, 0, value)
+    await flush(lines)
+  }
+
+  const pop = async () => {
+    const lines = await unflush()
+    if (lines.length === 0) {
+      return null
+    }
+    const value = lines.pop()
+    await flush(lines)
+    return value
+  }
+
+  const peek = async () => {
+    const lines = await unflush()
+    if (lines.length === 0) {
+      return null
+    }
+    return lines.pop()
+  }
+
+  const size = async () => {
+    const lines = await unflush()
+    return lines.length
+  }
+
+  const backup = async backupFilepath => {
+    try {
+      await copyFile(filepath, backupFilepath)
+    } catch (err) {
+      console.warn(`could not copy filepath ${filepath} to backup ${backupFilepath}: ${err.message}`)
+    }
+  }
+
+  const restore = async restoreFile => {
+    try {
+      await copyFile(restoreFile, filepath)
+    } catch (err) {
+      console.warn(`could not restore backup ${restoreFile} to filepath ${filepath}: ${err.message}`)
+    }
+  }
+
+  return {
+    flush,
+    unflush,
+    push,
+    pop,
+    peek,
+    size,
+    backup,
+    restore
+  }
+}
+
+module.exports = newFilestack

@@ -1,0 +1,16 @@
+---
+root: true
+env:
+  node: true
+  es2017: true
+parserOptions:
+  ecmaVersion: 2018
+plugins:
+  - jest
+  - prettier
+extends:
+  - "eslint:recommended"
+  - "plugin:jest/recommended"
+  - "plugin:prettier/recommended"
+rules:
+  strict: error
