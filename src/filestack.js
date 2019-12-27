@@ -63,11 +63,11 @@ const newFilestack = filepath => {
     }
   }
 
-  const restore = async backupFilepath => {
+  const restore = async restoreFile => {
     try {
-      await copyFile(backupFilepath, filepath)
+      await copyFile(restoreFile, filepath)
     } catch (err) {
-      console.warn(`could not restore backup ${backupFilepath} to filepath ${filepath}: ${err.message}`)
+      console.warn(`could not restore backup ${restoreFile} to filepath ${filepath}: ${err.message}`)
     }
   }
 
