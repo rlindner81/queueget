@@ -3,6 +3,16 @@
 const crypto = require("crypto")
 const { promisify } = require("util")
 
+const assert = (condition, errorMessage) => {
+  if (!condition) {
+    throw new Error(errorMessage)
+  }
+}
+
+// https://stackoverflow.com/questions/13627308/add-st-nd-rd-and-th-ordinal-suffix-to-a-number
+const ordinal = a =>
+  a + ["th", "st", "nd", "rd"][((a = ~~(a < 0 ? -a : a) % 100) > 10 && a < 14) || (a %= 10) > 3 ? 0 : a]
+
 const randomBytes = promisify(crypto.randomBytes)
 
 const sleep = sec => new Promise(resolve => setTimeout(resolve, sec * 1000))
@@ -33,6 +43,8 @@ const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) =>
 const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
 module.exports = {
+  assert,
+  ordinal,
   sleep,
   randomHex,
   base64encode,

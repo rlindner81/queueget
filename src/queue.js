@@ -16,14 +16,7 @@ const _getAdapter = (name, collection) =>
     ? collection.fallback
     : null
 
-const queue = async ({
-  queueFile = "queue.txt",
-  historyFile = "queue_history.txt",
-  restoreFile = null,
-  // restoreFile = "queue_backup.txt",
-  retries = 3,
-  routername = "fritz.box"
-}) => {
+const queue = async ({ queueFile, historyFile, restoreFile, retries, routername }) => {
   const router = _getAdapter(routername, routers)
   if (router != null) {
     console.log(`using router ${router.name}`)

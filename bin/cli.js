@@ -1,7 +1,7 @@
 "use strict"
 
+const { parseArgs } = require("../src/args")
 const { queue } = require("../src/")
-// const args = process.argv.slice(2)
 
 // process.on("exit", (...args) => {
 //   const i = 0
@@ -12,5 +12,6 @@ const { queue } = require("../src/")
 // })
 
 ;(async () => {
-  await queue({})
+  const options = await parseArgs(process.argv.slice(2))
+  await queue(options)
 })()
