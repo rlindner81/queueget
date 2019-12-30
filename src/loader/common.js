@@ -50,9 +50,7 @@ const commonload = async ({
           .exec(contentRangeHeader)
           .slice(1)
           .map(parseFloat)
-      : contentLengthHeader
-      ? [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
-      : [0, 0, 1]
+      : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
     if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
       console.info(`receiving ${totalLength} bytes`)
     } else {
