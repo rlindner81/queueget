@@ -1,6 +1,11 @@
 "use strict"
 
-const { readFile, writeFile, copyFile } = require("fs").promises
+const fs = require("fs")
+const { promisify } = require("util")
+
+const readFile = promisify(fs.readFile)
+const writeFile = promisify(fs.writeFile)
+const copyFile = promisify(fs.copyFile)
 
 const newFilestack = filepath => {
   const flush = async lines => {
@@ -32,22 +37,24 @@ const newFilestack = filepath => {
     await flush(lines)
   }
 
-  const pop = async () => {
+  const pop = async (index = 0) => {
     const lines = await unflush()
     if (lines.length === 0) {
       return null
     }
-    const value = lines.pop()
+
+    const [value] = lines.splice(index, 1)
     await flush(lines)
     return value
   }
 
-  const peek = async () => {
+  const peek = async (index = 0) => {
     const lines = await unflush()
     if (lines.length === 0) {
       return null
     }
-    return lines.pop()
+    const [value] = lines.splice(index, 1)
+    return value
   }
 
   const size = async () => {

@@ -1,9 +1,10 @@
 {
   "name": "queueget",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Download links from a queue file",
   "bin": {
-    "qget": "./bin/cli.js"
+    "qget": "./bin/cli.js",
+    "qgetd": "./bin/daemon.js"
   },
   "main": "./src/index.js",
   "files": [
@@ -23,7 +24,7 @@
   },
   "devDependencies": {
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-jest": "^22.21.0",
     "eslint-plugin-prettier": "^3.1.1",
     "jest": "^24.9.0",

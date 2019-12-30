@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 "use strict"
 
-const { access } = require("fs").promises
+const fs = require("fs")
+const { promisify } = require("util")
 const { usage, parseArgs } = require("../src/args")
 const { queue } = require("../src/")
+
+const access = promisify(fs.access)
 
 ;(async () => {
   const options = await parseArgs(process.argv.slice(2))
