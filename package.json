@@ -3,7 +3,8 @@
   "version": "0.5.2",
   "description": "Download links from a queue file",
   "bin": {
-    "qget": "./bin/cli.js"
+    "qget": "./bin/cli.js",
+    "qgetd": "./bin/daemon.js"
   },
   "main": "./src/index.js",
   "files": [
