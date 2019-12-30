@@ -14,23 +14,31 @@ const LOG_FILE = "qget.txt"
 const COMMAND = "qget"
 
 const _kill = pid => {
-    if (Number.isFinite(pid)) {
-      const killCommand = process.platform === "win32"
-        ? `taskkill /pid ${pid}`
-        : `kill ${pid}`
-      execSync(killCommand, { stdio: "ignore" })
-    }
+  if (Number.isFinite(pid)) {
+    const killCommand = process.platform === "win32" ? `taskkill /pid ${pid}` : `kill ${pid}`
+    execSync(killCommand, { stdio: "ignore" })
   }
+}
 
 ;(async () => {
   try {
     const pid = parseFloat((await readFile(PID_FILE)).toString())
     _kill(pid)
-  } catch (err) {
-  }
+    // eslint-disable-next-line no-empty
+  } catch (err) {}
 
   const foutlog = await open(LOG_FILE, "w")
-  const child = spawn(COMMAND, process.argv.slice(2), { stdio: ["ignore", foutlog, foutlog], detached: true })
+  let options = {
+    stdio: ["ignore", foutlog, foutlog],
+    detached: true
+  }
+  if (process.platform === "win32") {
+    options = Object.assign(options, {
+      shell: true,
+      windowsHide: true
+    })
+  }
+  const child = spawn(COMMAND, process.argv.slice(2), options)
   await writeFile(PID_FILE, String(child.pid))
   child.unref()
 })()
