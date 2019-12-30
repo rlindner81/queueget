@@ -24,6 +24,7 @@ options:
   --restore FILE     restore queue before starting for debugging
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --router TYPE      router for ip refreshing (defaults to fritzbox)
+
 ```
 
 ### Daemon
