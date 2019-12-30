@@ -53,7 +53,7 @@ const commonload = async ({
       : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
     if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
       console.info(`receiving ${totalLength} bytes`)
-    } else {
+    } else if (Number.isFinite(contentRangeFrom) && Number.isFinite(contentRangeTo) && Number.isFinite(totalLength)) {
       console.info(`receiving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
     }
 
@@ -73,7 +73,7 @@ const commonload = async ({
     totalLoaded += contentLoaded
     process.stdout.write("\n")
 
-    if (contentRangeTo + 1 === totalLength) {
+    if (requestSize === 0 || contentRangeTo + 1 === totalLength) {
       break
     }
   }
