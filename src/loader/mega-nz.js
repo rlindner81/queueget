@@ -1,14 +1,8 @@
 "use strict"
 
-const stream = require("stream")
-const { createWriteStream } = require("fs")
-const { once } = require("events")
-const { promisify } = require("util")
-
+const { commonload } = require("./common")
 const { sleep, base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
-const { request, requestRaw } = require("../request")
-
-const finished = promisify(stream.finished)
+const { request } = require("../request")
 
 const LINK_TYPE = {
   FILE: "#",
@@ -65,71 +59,32 @@ const load = async (url, urlParts, queueStack, router) => {
   const _downloadAndDecrypt = async (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)
-    const requestSizeLimit = 500000000 // 0.5GB
-    let totalLoaded = 0
-
-    const fileOut = createWriteStream(filename)
-    for (;;) {
-      const response = await requestRaw({
-        url: link,
-        headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
-      })
-
-      if (response.statusCode === 509) {
-        if (router) {
-          console.info("bandwidth limit exceeded refreshing ip")
-          await router.refreshIp()
-        } else {
-          const timeLeft = parseFloat(response.headers["x-mega-time-left"])
-          console.log(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
-          await sleep(timeLeft)
+    const requestSize = 500000000 // 0.5GB
+    await commonload({
+      filename,
+      url: link,
+      requestSize,
+      errorStatusHandler: async response => {
+        if (response.statusCode === 509) {
+          if (router) {
+            console.info("bandwidth limit exceeded refreshing ip")
+            await router.refreshIp()
+          } else {
+            const timeLeft = parseFloat(response.headers["x-mega-time-left"])
+            console.info(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
+            await sleep(timeLeft)
+          }
+          return true
         }
-        continue
-      }
-
-      const [contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/
-        .exec(response.headers["content-range"])
-        .slice(1)
-        .map(parseFloat)
-      if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
-        console.log(`receiving ${totalLength} bytes`)
-      } else {
-        console.log(`receiving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
-      }
-
-      const contentLength = contentRangeTo - contentRangeFrom + 1
-      let contentLoaded = 0
-      let dots = 0
-
-      for await (const chunk of response) {
-        const decrypted = decipher.update(chunk)
-        if (!fileOut.write(decrypted)) {
-          await once(fileOut, "drain")
-        }
-        contentLoaded += decrypted.length
-
-        if ((contentLoaded / contentLength) * 100 > dots) {
-          dots++
-          process.stdout.write(".")
-        }
-      }
-      totalLoaded += contentLoaded
-      process.stdout.write("\n")
-
-      if (contentRangeTo + 1 === totalLength) {
-        break
-      }
-    }
-    fileOut.write(decipher.final())
-    fileOut.end()
-    await finished(fileOut)
+      },
+      chunkTransform: chunk => decipher.update(chunk)
+    })
   }
 
   const _getFile = async (data, key) => {
     const link = data.g
     const attributes = _decryptAttributes(data.at, key)
     const filename = attributes.n
-    console.log(`loading file ${filename}`)
     return _downloadAndDecrypt(link, filename, key)
   }
 

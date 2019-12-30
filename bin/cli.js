@@ -11,13 +11,13 @@ const access = promisify(fs.access)
 ;(async () => {
   const options = await parseArgs(process.argv.slice(2))
   if (options.help) {
-    return console.log(usage())
+    return console.info(usage())
   }
   try {
     await access(options.queueFile)
   } catch (err) {
     console.warn(`warning: could not access ${options.queueFile}`)
-    return console.log(usage())
+    return console.info(usage())
   }
   await queue(options)
 })()
