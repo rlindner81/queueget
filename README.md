@@ -24,5 +24,9 @@ options:
   --restore FILE     restore queue before starting for debugging
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --router TYPE      router for ip refreshing (defaults to fritzbox)
-
 ```
+
+### Daemon
+QueueGet has a daemon mode, where it just downloads everything that's in the queue without blocking the shell you are 
+using to start it. Run this mode with `qgetd` instead of `qget`. The output is writen to `qget.txt` and the process id
+is written to `qget.pid`, this id is used to ensure only one instance of the daemon is running.
