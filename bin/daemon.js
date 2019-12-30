@@ -29,11 +29,10 @@ const _kill = pid => {
   } catch (err) {}
 
   const foutlog = await open(LOG_FILE, "w")
-  let options = {
+  const child = spawn(process.execPath, [SCRIPT].concat(process.argv.slice(2)), {
     stdio: ["ignore", foutlog, foutlog],
     detached: true
-  }
-  const child = spawn(process.execPath, [SCRIPT].concat(process.argv.slice(2)), options)
+  })
   await writeFile(PID_FILE, String(child.pid))
   child.unref()
 })()
