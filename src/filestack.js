@@ -37,12 +37,13 @@ const newFilestack = filepath => {
     await flush(lines)
   }
 
-  const pop = async () => {
+  const pop = async (index = 0) => {
     const lines = await unflush()
     if (lines.length === 0) {
       return null
     }
-    const value = lines.pop()
+
+    const [value] = lines.splice(index, 1)
     await flush(lines)
     return value
   }
