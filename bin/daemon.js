@@ -16,7 +16,7 @@ const SCRIPT = path.join(__dirname, "cli.js")
 
 const _kill = pid => {
   if (Number.isFinite(pid)) {
-    const killCommand = process.platform === "win32" ? `taskkill /pid ${pid}` : `kill ${pid}`
+    const killCommand = process.platform === "win32" ? `taskkill /f /pid ${pid}` : `kill ${pid}`
     execSync(killCommand, { stdio: "ignore" })
   }
 }
