@@ -2,6 +2,7 @@
 "use strict"
 
 const fs = require("fs")
+const path = require("path")
 const { promisify } = require("util")
 const { spawn, execSync } = require("child_process")
 
@@ -11,7 +12,7 @@ const writeFile = promisify(fs.writeFile)
 
 const PID_FILE = "qget.pid"
 const LOG_FILE = "qget.txt"
-const COMMAND = "qget"
+const SCRIPT = path.join(__dirname, "cli.js")
 
 const _kill = pid => {
   if (Number.isFinite(pid)) {
@@ -32,13 +33,7 @@ const _kill = pid => {
     stdio: ["ignore", foutlog, foutlog],
     detached: true
   }
-  if (process.platform === "win32") {
-    options = Object.assign(options, {
-      shell: true,
-      windowsHide: true
-    })
-  }
-  const child = spawn(COMMAND, process.argv.slice(2), options)
+  const child = spawn(process.execPath, [SCRIPT].concat(process.argv.slice(2)), options)
   await writeFile(PID_FILE, String(child.pid))
   child.unref()
 })()
