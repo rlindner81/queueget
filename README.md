@@ -28,6 +28,6 @@ options:
 ```
 
 ### Daemon
-QueueGet has a daemon mode, where it just downloads everything that's in the queue without blocking the shell you are 
-using to start it. Run this mode with `qgetd` instead of `qget`. The output is writen to `qget.txt` and the process id
-is written to `qget.pid`, this id is used to ensure only one instance of the daemon is running.
+QueueGet has a daemon mode, where it just downloads the queue without blocking the shell you are using to start it. Use
+`qgetd` to run this mode instead of `qget`. The output is written to `qget.txt` and the process id is written to 
+`qget.pid`, this id is used to ensure only one instance of the daemon is running.
