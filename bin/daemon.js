@@ -13,12 +13,19 @@ const PID_FILE = "qget.pid"
 const LOG_FILE = "qget.txt"
 const COMMAND = "qget"
 
+const _kill = pid => {
+    if (Number.isFinite(pid)) {
+      const killCommand = process.platform === "win32"
+        ? `taskkill /pid ${pid}`
+        : `kill ${pid}`
+      execSync(killCommand, { stdio: "ignore" })
+    }
+  }
+
 ;(async () => {
   try {
     const pid = parseFloat((await readFile(PID_FILE)).toString())
-    if (!isNaN(pid)) {
-      execSync(`kill ${pid}`, { stdio: "ignore" })
-    }
+    _kill(pid)
   } catch (err) {
   }
 
