@@ -48,12 +48,13 @@ const newFilestack = filepath => {
     return value
   }
 
-  const peek = async () => {
+  const peek = async (index = 0) => {
     const lines = await unflush()
     if (lines.length === 0) {
       return null
     }
-    return lines.pop()
+    const [value] = lines.splice(index, 1)
+    return value
   }
 
   const size = async () => {
