@@ -9,7 +9,7 @@ const load = async url => {
   const [, filename] = /Filename :<\/td>[\s\S]*?<td.*?>(.+?)<\/td>/.exec(firstData)
 
   const secondData = (await request({ url, data: { adz } })).data
-  const [, realLink] = /href="(https:\/\/[\w-]+\.1fichier\.com\/\w+)"/.exec(secondData)
+  const [, realLink] = /href="(https:\/\/.+\.1fichier\.com\/.+)"/.exec(secondData)
   await commonload({ filename, url: realLink })
 }
 
