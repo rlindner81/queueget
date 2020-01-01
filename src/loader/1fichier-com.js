@@ -12,7 +12,7 @@ const _group = (regex, data) => {
   return null
 }
 
-const load = async url => {
+const load = async (url, urlParts, queueStack, router) => {
   const firstData = (await request({ url })).data
   const [, adz] = /name="adz" value="([.\d]+)"/.exec(firstData)
   const [, filename] = /Filename :<\/td>[\s\S]*?<td.*?>(.+?)<\/td>/.exec(firstData)
@@ -21,8 +21,12 @@ const load = async url => {
     const secondData = (await request({ url, data: { adz } })).data
     const waitTime = _group(/You must wait (\d+) minutes.../, secondData)
     if (waitTime !== null) {
-      console.info(`sleeping for ${waitTime} minutes`)
-      await sleep(waitTime * 60)
+      if (router !== null) {
+        router.refreshIp()
+      } else {
+        console.info(`sleeping for ${waitTime} minutes`)
+        await sleep(waitTime * 60)
+      }
       continue
     }
     const realLink = _group(/href="(https:\/\/.+\.1fichier\.com\/.+)"/, secondData)
