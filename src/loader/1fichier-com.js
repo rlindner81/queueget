@@ -23,7 +23,7 @@ const load = async (url, urlParts, queueStack, router) => {
     if (waitTime !== null) {
       if (router !== null) {
         console.info("skipping wait time by refreshing ip")
-        router.refreshIp()
+        await router.refreshIp()
       } else {
         console.info(`sleeping for ${waitTime} minutes`)
         await sleep(waitTime * 60)
