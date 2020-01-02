@@ -10,12 +10,14 @@ const finished = promisify(stream.finished)
 
 const _humanBytes = size => {
   const units = ["B", "KB", "MB", "GB", "TB"]
-  let shift = 0
-  for (const [index, unit] of units.entries()) {
-    if (index === units.length - 1 || size >> (shift + 10) === 0) {
-      return `${(size / (1 << shift)).toFixed(1)} ${unit}`
+  let current = 1
+  let next = 1024
+  for (let index = 0; index < units.length; index++) {
+    if (index === units.length - 1 || size < next) {
+      return `${(size / current).toFixed(1)} ${units[index]}`
     }
-    shift += 10
+    current = next
+    next *= 1024
   }
 }
 
