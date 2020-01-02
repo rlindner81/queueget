@@ -3,6 +3,14 @@
 const crypto = require("crypto")
 const { promisify } = require("util")
 
+const group = (regex, data, index = null) => {
+  const result = regex.exec(data)
+  if (result && result.length >= 1) {
+    return index === null ? result.slice(1) : result.length > index ? result[index] : null
+  }
+  return null
+}
+
 const assert = (condition, errorMessage) => {
   if (!condition) {
     throw new Error(errorMessage)
@@ -43,6 +51,7 @@ const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) =>
 const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
 module.exports = {
+  group,
   assert,
   ordinal,
   sleep,

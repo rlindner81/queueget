@@ -2,15 +2,7 @@
 
 const { commonload } = require("./common")
 const { request } = require("../request")
-const { sleep } = require("../helper")
-
-const group = (regex, data, index = null) => {
-  const result = regex.exec(data)
-  if (result && result.length > 1) {
-    return index === null ? result.slice(1) : result.length > index ? result[index] : null
-  }
-  return null
-}
+const { group, sleep } = require("../helper")
 
 const load = async (url, urlParts, queueStack, router) => {
   const firstData = (await request({ url })).data
