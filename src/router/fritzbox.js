@@ -26,7 +26,7 @@ const fritzCall = async command => {
 const refreshIp = async () => {
   await fritzCall("ForceTermination")
   await fritzCall("RequestConnection")
-  await sleep(30)
+  await sleep(60)
 }
 
 module.exports = {
