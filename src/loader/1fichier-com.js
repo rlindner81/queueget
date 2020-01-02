@@ -4,22 +4,22 @@ const { commonload } = require("./common")
 const { request } = require("../request")
 const { sleep } = require("../helper")
 
-const _group = (regex, data) => {
+const group = (regex, data, index = null) => {
   const result = regex.exec(data)
   if (result && result.length > 1) {
-    return result.slice(1)
+    return index === null ? result.slice(1) : result.length > index ? result[index] : null
   }
   return null
 }
 
 const load = async (url, urlParts, queueStack, router) => {
   const firstData = (await request({ url })).data
-  const [, adz] = /name="adz" value="([.\d]+)"/.exec(firstData)
-  const [, filename] = /Filename :<\/td>[\s\S]*?<td.*?>(.+?)<\/td>/.exec(firstData)
+  const adz = group(/name="adz" value="([.\d]+)"/, firstData, 1)
+  const filename = group(/Filename :<\/td>[\s\S]*?<td.*?>(.+?)<\/td>/, firstData, 1)
 
   for (;;) {
     const secondData = (await request({ url, data: { adz } })).data
-    const waitTime = _group(/You must wait (\d+) minutes.../, secondData)
+    const waitTime = group(/You must wait (\d+) minutes.../, secondData, 1)
     if (waitTime !== null) {
       if (router !== null) {
         console.info("skipping wait time by refreshing ip")
@@ -30,7 +30,10 @@ const load = async (url, urlParts, queueStack, router) => {
       }
       continue
     }
-    const realLink = _group(/href="(https:\/\/.+\.1fichier\.com\/.+)"/, secondData)
+    const realLink = group(/href="(https?:\/\/[\w-]+\.1fichier\.com\/\w+)"/, secondData, 1)
+    if (realLink === null) {
+      throw new Error(`could not read real link for url ${url}`)
+    }
     await commonload({ filename, url: realLink })
     break
   }
