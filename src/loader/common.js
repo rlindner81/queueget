@@ -8,6 +8,17 @@ const { requestRaw } = require("../request")
 
 const finished = promisify(stream.finished)
 
+const _humanBytes = size => {
+  const units = ["B", "KB", "MB", "GB", "TB"]
+  let shift = 0
+  for (const [index, unit] of units.entries()) {
+    if (index === units.length - 1 || size >> (shift + 10) === 0) {
+      return `${(size / (1 << shift)).toFixed(1)} ${unit}`
+    }
+    shift += 10
+  }
+}
+
 const commonload = async ({
   filename,
   url,
@@ -20,7 +31,7 @@ const commonload = async ({
   let totalLength = 0
 
   const fileOut = createWriteStream(filename)
-  for (;;) {
+  for (; ;) {
     let contentRangeFrom = 0
     let contentRangeTo = 0
     let contentLoaded = 0
@@ -30,9 +41,9 @@ const commonload = async ({
     const response =
       requestSize > 0
         ? await requestRaw({
-            url,
-            headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSize - 1}` }
-          })
+          url,
+          headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSize - 1}` }
+        })
         : await requestRaw({ url })
 
     if (response.statusCode >= 400) {
@@ -45,16 +56,20 @@ const commonload = async ({
 
     const contentRangeHeader = response.headers["content-range"]
     const contentLengthHeader = response.headers["content-length"]
-    ;[contentRangeFrom, contentRangeTo, totalLength] = contentRangeHeader
-      ? /bytes (\d+)-(\d+)\/(\d+)/
+      ;[contentRangeFrom, contentRangeTo, totalLength] = contentRangeHeader
+        ? /bytes (\d+)-(\d+)\/(\d+)/
           .exec(contentRangeHeader)
           .slice(1)
           .map(parseFloat)
-      : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
+        : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
     if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
-      console.info(`receiving ${totalLength} bytes`)
+      console.info(`receiving ${_humanBytes(totalLength)}`)
     } else if (Number.isFinite(contentRangeFrom) && Number.isFinite(contentRangeTo) && Number.isFinite(totalLength)) {
-      console.info(`receiving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
+      console.info(
+        `receiving from ${_humanBytes(contentRangeFrom + 1)} to ${_humanBytes(contentRangeTo + 1)} of ${_humanBytes(
+          totalLength
+        )}`
+      )
     }
 
     contentLength = contentRangeTo - contentRangeFrom + 1
