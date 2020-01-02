@@ -31,7 +31,7 @@ const commonload = async ({
   let totalLength = 0
 
   const fileOut = createWriteStream(filename)
-  for (; ;) {
+  for (;;) {
     let contentRangeFrom = 0
     let contentRangeTo = 0
     let contentLoaded = 0
@@ -41,9 +41,9 @@ const commonload = async ({
     const response =
       requestSize > 0
         ? await requestRaw({
-          url,
-          headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSize - 1}` }
-        })
+            url,
+            headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSize - 1}` }
+          })
         : await requestRaw({ url })
 
     if (response.statusCode >= 400) {
@@ -56,12 +56,12 @@ const commonload = async ({
 
     const contentRangeHeader = response.headers["content-range"]
     const contentLengthHeader = response.headers["content-length"]
-      ;[contentRangeFrom, contentRangeTo, totalLength] = contentRangeHeader
-        ? /bytes (\d+)-(\d+)\/(\d+)/
+    ;[contentRangeFrom, contentRangeTo, totalLength] = contentRangeHeader
+      ? /bytes (\d+)-(\d+)\/(\d+)/
           .exec(contentRangeHeader)
           .slice(1)
           .map(parseFloat)
-        : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
+      : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
     if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
       console.info(`receiving ${_humanBytes(totalLength)}`)
     } else if (Number.isFinite(contentRangeFrom) && Number.isFinite(contentRangeTo) && Number.isFinite(totalLength)) {
