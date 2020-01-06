@@ -22,7 +22,7 @@ const parseArgs = args => {
   let historyFile = "queue_history.txt"
   let restoreFile = null
   let retries = 3
-  let routername = "fritzbox"
+  let routername = null
   let help = false
 
   let parsedOptions = 0

@@ -12,7 +12,22 @@ of QueueGet is that you can just add new links to the queue file that it uses an
 has some convenience features, such as 
 * Continuing broken downloads where they stopped if possible
 * Loaders for preprocessing links from file hosters
-* IP refreshing if possible
+* IP refreshing for supported routers (currently only Fritzbox)
+
+```
+# queue file with link at the top
+queue.txt
+http://www.mirrorservice.org/sites/releases.ubuntu.com/18.04.3/ubuntu-18.04.3-desktop-amd64.iso
+
+qget
+
+# link is being processed, so still at the top, additional links go below
+queue.txt
+http://www.mirrorservice.org/sites/releases.ubuntu.com/18.04.3/ubuntu-18.04.3-desktop-amd64.iso
+http://www.mirrorservice.org/sites/releases.ubuntu.com/19.10/ubuntu-19.10-desktop-amd64.iso
+
+# when processing finishes successfully, the topmost link is removed and further links are processed
+```
 
 ## Usage
 ```
@@ -23,7 +38,7 @@ options:
   --history FILE     links of the past (defaults to queue_history.txt)
   --restore FILE     restore queue before starting for debugging
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
-  --router TYPE      router for ip refreshing (defaults to fritzbox)
+  --router TYPE      router for ip refreshing, e.g. fritzbox
 
 ```
 
