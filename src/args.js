@@ -10,7 +10,7 @@ options:
   --history FILE     links of the past (defaults to queue_history.txt)
   --restore FILE     restore queue before starting for debugging
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
-  --router TYPE      router for ip refreshing (defaults to fritzbox)
+  --router TYPE      router for ip refreshing, e.g. fritzbox
 `
 
 const _unquoteArg = arg => {
@@ -22,7 +22,7 @@ const parseArgs = args => {
   let historyFile = "queue_history.txt"
   let restoreFile = null
   let retries = 3
-  let routername = "fritzbox"
+  let routername = null
   let help = false
 
   let parsedOptions = 0

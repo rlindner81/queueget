@@ -33,7 +33,7 @@ const requestRaw = ({ url, method, query, data, headers }) =>
     }
 
     const requestOptions = {
-      method: method ? method : data && data.length > 0 ? "POST" : "GET",
+      method: method ? method : data ? "POST" : "GET",
       headers
     }
 

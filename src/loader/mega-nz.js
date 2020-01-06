@@ -1,14 +1,8 @@
 "use strict"
 
-const stream = require("stream")
-const { createWriteStream } = require("fs")
-const { once } = require("events")
-const { promisify } = require("util")
-
+const { commonload } = require("./common")
 const { sleep, base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
-const { request, requestRaw } = require("../request")
-
-const finished = promisify(stream.finished)
+const { request } = require("../request")
 
 const LINK_TYPE = {
   FILE: "#",
@@ -62,74 +56,35 @@ const _decryptAttributes = (attributes, key) => {
 }
 
 const load = async (url, urlParts, queueStack, router) => {
-  const _downloadAndDecrypt = async (link, filename, key) => {
+  const _downloadAndDecrypt = (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)
-    const requestSizeLimit = 500000000 // 0.5GB
-    let totalLoaded = 0
-
-    const fileOut = createWriteStream(filename)
-    for (;;) {
-      const response = await requestRaw({
-        url: link,
-        headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSizeLimit - 1}` }
-      })
-
-      if (response.statusCode === 509) {
-        if (router) {
-          console.info("bandwidth limit exceeded refreshing ip")
-          await router.refreshIp()
-        } else {
-          const timeLeft = parseFloat(response.headers["x-mega-time-left"])
-          console.log(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
-          await sleep(timeLeft)
+    const requestSize = 500000000 // 0.5GB
+    return commonload({
+      filename,
+      url: link,
+      requestSize,
+      errorStatusHandler: async response => {
+        if (response.statusCode === 509) {
+          if (router) {
+            console.info("bandwidth limit exceeded refreshing ip")
+            await router.refreshIp()
+          } else {
+            const timeLeft = parseFloat(response.headers["x-mega-time-left"])
+            console.info(`bandwidth limit exceeded sleeping ${timeLeft}sec`)
+            await sleep(timeLeft)
+          }
+          return true
         }
-        continue
-      }
-
-      const [contentRangeFrom, contentRangeTo, totalLength] = /bytes (\d+)-(\d+)\/(\d+)/
-        .exec(response.headers["content-range"])
-        .slice(1)
-        .map(parseFloat)
-      if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
-        console.log(`receiving ${totalLength} bytes`)
-      } else {
-        console.log(`receiving from ${contentRangeFrom + 1} to ${contentRangeTo + 1} of ${totalLength} bytes`)
-      }
-
-      const contentLength = contentRangeTo - contentRangeFrom + 1
-      let contentLoaded = 0
-      let dots = 0
-
-      for await (const chunk of response) {
-        const decrypted = decipher.update(chunk)
-        if (!fileOut.write(decrypted)) {
-          await once(fileOut, "drain")
-        }
-        contentLoaded += decrypted.length
-
-        if ((contentLoaded / contentLength) * 100 > dots) {
-          dots++
-          process.stdout.write(".")
-        }
-      }
-      totalLoaded += contentLoaded
-      process.stdout.write("\n")
-
-      if (contentRangeTo + 1 === totalLength) {
-        break
-      }
-    }
-    fileOut.write(decipher.final())
-    fileOut.end()
-    await finished(fileOut)
+      },
+      chunkTransform: chunk => decipher.update(chunk)
+    })
   }
 
-  const _getFile = async (data, key) => {
+  const _getFile = (data, key) => {
     const link = data.g
     const attributes = _decryptAttributes(data.at, key)
     const filename = attributes.n
-    console.log(`loading file ${filename}`)
     return _downloadAndDecrypt(link, filename, key)
   }
 
@@ -140,13 +95,13 @@ const load = async (url, urlParts, queueStack, router) => {
       let fileId = linkId
       let fileKey = base64urlDecode(linkKey)
       let fileData = await _api(null, { a: "g", g: 1, p: fileId })
-      await _getFile(fileData, fileKey)
-      break
+      return _getFile(fileData, fileKey)
     }
     case LINK_TYPE.FOLDER: {
       let folderId = linkId
       let folderKey = base64urlDecode(linkKey)
       let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
+      let filenames = []
       // NOTE: I want to do these sequentially for now
       for (const fileData of folderData.f) {
         if (fileData.t !== 0) {
@@ -157,9 +112,9 @@ const load = async (url, urlParts, queueStack, router) => {
         fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
         const nodeId = fileData.h
         const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
-        await _getFile(nodeData, fileKey)
+        filenames = filenames.concat(await _getFile(nodeData, fileKey))
       }
-      break
+      return filenames
     }
     default:
       throw new Error(`unknown mega link type ${linkType}`)
