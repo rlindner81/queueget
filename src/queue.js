@@ -67,11 +67,11 @@ const queue = async ({
         }
       }
     }
-    await queueStack.pop()
-    await historyStack.push(entry)
     if (filenames && Array.isArray(filenames) && filenames.length > 0) {
       await Promise.all(filenames.map(filename => historyStack.push(filename)))
     }
+    await queueStack.pop()
+    await historyStack.push(entry)
   }
 }
 
