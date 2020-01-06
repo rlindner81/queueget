@@ -26,8 +26,7 @@ const load = async (url, urlParts, queueStack, router) => {
     if (realLink === null) {
       throw new Error(`could not read real link for url ${url}`)
     }
-    await commonload({ filename, url: realLink })
-    break
+    return commonload({ filename, url: realLink })
   }
 }
 

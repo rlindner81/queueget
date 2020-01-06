@@ -56,11 +56,11 @@ const _decryptAttributes = (attributes, key) => {
 }
 
 const load = async (url, urlParts, queueStack, router) => {
-  const _downloadAndDecrypt = async (link, filename, key) => {
+  const _downloadAndDecrypt = (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)
     const requestSize = 500000000 // 0.5GB
-    await commonload({
+    return commonload({
       filename,
       url: link,
       requestSize,
@@ -81,7 +81,7 @@ const load = async (url, urlParts, queueStack, router) => {
     })
   }
 
-  const _getFile = async (data, key) => {
+  const _getFile = (data, key) => {
     const link = data.g
     const attributes = _decryptAttributes(data.at, key)
     const filename = attributes.n
@@ -95,13 +95,13 @@ const load = async (url, urlParts, queueStack, router) => {
       let fileId = linkId
       let fileKey = base64urlDecode(linkKey)
       let fileData = await _api(null, { a: "g", g: 1, p: fileId })
-      await _getFile(fileData, fileKey)
-      break
+      return _getFile(fileData, fileKey)
     }
     case LINK_TYPE.FOLDER: {
       let folderId = linkId
       let folderKey = base64urlDecode(linkKey)
       let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
+      let filenames = []
       // NOTE: I want to do these sequentially for now
       for (const fileData of folderData.f) {
         if (fileData.t !== 0) {
@@ -112,9 +112,9 @@ const load = async (url, urlParts, queueStack, router) => {
         fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
         const nodeId = fileData.h
         const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
-        await _getFile(nodeData, fileKey)
+        filenames = filenames.concat(await _getFile(nodeData, fileKey))
       }
-      break
+      return filenames
     }
     default:
       throw new Error(`unknown mega link type ${linkType}`)

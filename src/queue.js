@@ -50,11 +50,12 @@ const queue = async ({
     const [url] = match
     const urlParts = _url.parse(url)
     const { hostname } = urlParts
+    let filenames = null
     for (let retry = 1; ; ) {
       try {
         const loader = _getAdapter(hostname, loaders)
         console.info(`using hoster ${loader.name} for ${url}`)
-        await loader.load(url, urlParts, queueStack, router)
+        filenames = await loader.load(url, urlParts, queueStack, router)
         break
       } catch (err) {
         console.debug(err.stack || err.message)
@@ -68,6 +69,9 @@ const queue = async ({
     }
     await queueStack.pop()
     await historyStack.push(entry)
+    if (filenames && Array.isArray(filenames) && filenames.length > 0) {
+      await Promise.all(filenames.map(filename => historyStack.push(filename)))
+    }
   }
 }
 

@@ -2,9 +2,9 @@
 
 const { commonload } = require("./common")
 
-const load = async (url, urlParts) => {
+const load = (url, urlParts) => {
   const filename = urlParts.pathname.replace(/^\//, "").replace(/[^.\w]/g, "-")
-  await commonload({ filename, url })
+  return commonload({ filename, url })
 }
 
 module.exports = {

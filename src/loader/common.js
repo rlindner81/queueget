@@ -96,6 +96,7 @@ const commonload = async ({
   }
   fileOut.end()
   await finished(fileOut)
+  return [filename]
 }
 
 module.exports = {
