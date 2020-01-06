@@ -25,7 +25,9 @@ const commonload = async ({
   filename,
   url,
   requestSize = 0,
-  errorStatusHandler = async () => false,
+  errorStatusHandler = async response => {
+    throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
+  },
   chunkTransform = async a => a
 }) => {
   console.log(`loading file ${filename}`)
