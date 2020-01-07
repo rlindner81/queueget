@@ -31,10 +31,18 @@ const newFilestack = filepath => {
     }
   }
 
-  const push = async (value, index = 0) => {
+  const push = async (index = 0, ...values) => {
     const lines = await unflush()
-    lines.splice(index, 0, value)
-    await flush(lines)
+    lines.splice(index, 0, ...values)
+    return flush(lines)
+  }
+  const pushTop = async (...values) => {
+    const lines = await unflush()
+    return flush(values.concat(lines))
+  }
+  const pushBottom = async (...values) => {
+    const lines = await unflush()
+    return flush(lines.concat(values))
   }
 
   const pop = async (index = 0) => {
@@ -82,6 +90,8 @@ const newFilestack = filepath => {
     flush,
     unflush,
     push,
+    pushTop,
+    pushBottom,
     pop,
     peek,
     size,
