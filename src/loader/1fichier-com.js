@@ -32,5 +32,5 @@ const load = async (url, urlParts, queueStack, router) => {
 
 module.exports = {
   name: __filename.slice(__dirname.length + 1, -3),
-  load
+  load,
 }

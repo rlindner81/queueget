@@ -9,5 +9,5 @@ const load = (url, urlParts) => {
 
 module.exports = {
   name: __filename.slice(__dirname.length + 1, -3),
-  load
+  load,
 }

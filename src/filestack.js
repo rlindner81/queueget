@@ -7,8 +7,8 @@ const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
 const copyFile = promisify(fs.copyFile)
 
-const newFilestack = filepath => {
-  const flush = async lines => {
+const newFilestack = (filepath) => {
+  const flush = async (lines) => {
     try {
       await writeFile(filepath, lines.join("\n"))
     } catch (err) {
@@ -21,8 +21,8 @@ const newFilestack = filepath => {
       const data = (await readFile(filepath)).toString()
       return data
         .split("\n")
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
     } catch (err) {
       if (err.code !== "ENOENT") {
         throw err
@@ -31,10 +31,18 @@ const newFilestack = filepath => {
     }
   }
 
-  const push = async (value, index = 0) => {
+  const push = async (index = 0, ...values) => {
     const lines = await unflush()
-    lines.splice(index, 0, value)
-    await flush(lines)
+    lines.splice(index, 0, ...values)
+    return flush(lines)
+  }
+  const pushTop = async (...values) => {
+    const lines = await unflush()
+    return flush(values.concat(lines))
+  }
+  const pushBottom = async (...values) => {
+    const lines = await unflush()
+    return flush(lines.concat(values))
   }
 
   const pop = async (index = 0) => {
@@ -62,7 +70,7 @@ const newFilestack = filepath => {
     return lines.length
   }
 
-  const backup = async backupFilepath => {
+  const backup = async (backupFilepath) => {
     try {
       await copyFile(filepath, backupFilepath)
     } catch (err) {
@@ -70,7 +78,7 @@ const newFilestack = filepath => {
     }
   }
 
-  const restore = async restoreFile => {
+  const restore = async (restoreFile) => {
     try {
       await copyFile(restoreFile, filepath)
     } catch (err) {
@@ -82,11 +90,13 @@ const newFilestack = filepath => {
     flush,
     unflush,
     push,
+    pushTop,
+    pushBottom,
     pop,
     peek,
     size,
     backup,
-    restore
+    restore,
   }
 }
 

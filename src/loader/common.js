@@ -8,7 +8,7 @@ const { requestRaw } = require("../request")
 
 const finished = promisify(stream.finished)
 
-const _humanBytes = size => {
+const _humanBytes = (size) => {
   const units = ["B", "KB", "MB", "GB", "TB"]
   let current = 1
   let next = 1024
@@ -25,8 +25,10 @@ const commonload = async ({
   filename,
   url,
   requestSize = 0,
-  errorStatusHandler = async () => false,
-  chunkTransform = async a => a
+  errorStatusHandler = async (response) => {
+    throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
+  },
+  chunkTransform = async (a) => a,
 }) => {
   console.log(`loading file ${filename}`)
   let totalLoaded = 0
@@ -44,7 +46,7 @@ const commonload = async ({
       requestSize > 0
         ? await requestRaw({
             url,
-            headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSize - 1}` }
+            headers: { range: `bytes=${totalLoaded}-${totalLoaded + requestSize - 1}` },
           })
         : await requestRaw({ url })
 
@@ -59,10 +61,7 @@ const commonload = async ({
     const contentRangeHeader = response.headers["content-range"]
     const contentLengthHeader = response.headers["content-length"]
     ;[contentRangeFrom, contentRangeTo, totalLength] = contentRangeHeader
-      ? /bytes (\d+)-(\d+)\/(\d+)/
-          .exec(contentRangeHeader)
-          .slice(1)
-          .map(parseFloat)
+      ? /bytes (\d+)-(\d+)\/(\d+)/.exec(contentRangeHeader).slice(1).map(parseFloat)
       : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
     if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
       console.info(`receiving ${_humanBytes(totalLength)}`)
@@ -100,5 +99,5 @@ const commonload = async ({
 }
 
 module.exports = {
-  commonload
+  commonload,
 }

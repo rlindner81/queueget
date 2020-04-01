@@ -6,7 +6,7 @@ const { request } = require("../request")
 
 const LINK_TYPE = {
   FILE: "#",
-  FOLDER: "#F"
+  FOLDER: "#F",
 }
 
 // http://julien-marchand.fr/blog/using-mega-api-with-python-examples/
@@ -24,7 +24,7 @@ const LINK_TYPE = {
 // s: The size of the node
 // ts: The time of the last modification of the node
 
-const _foldKey = key => {
+const _foldKey = (key) => {
   let result = Buffer.alloc(16, 0)
   Buffer.from(key).forEach((c, i) => {
     result[i % 16] ^= c
@@ -64,7 +64,7 @@ const load = async (url, urlParts, queueStack, router) => {
       filename,
       url: link,
       requestSize,
-      errorStatusHandler: async response => {
+      errorStatusHandler: async (response) => {
         if (response.statusCode === 509) {
           if (router) {
             console.info("bandwidth limit exceeded refreshing ip")
@@ -77,7 +77,7 @@ const load = async (url, urlParts, queueStack, router) => {
           return true
         }
       },
-      chunkTransform: chunk => decipher.update(chunk)
+      chunkTransform: (chunk) => decipher.update(chunk),
     })
   }
 
@@ -123,5 +123,5 @@ const load = async (url, urlParts, queueStack, router) => {
 
 module.exports = {
   name: __filename.slice(__dirname.length + 1, -3),
-  load
+  load,
 }

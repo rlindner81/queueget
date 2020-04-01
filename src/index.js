@@ -7,5 +7,5 @@ const helper = require("./helper")
 module.exports = {
   queue,
   request,
-  ...helper
+  ...helper,
 }
