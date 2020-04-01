@@ -4,7 +4,7 @@ const http = require("http")
 const https = require("https")
 const { URL } = require("url")
 
-const _toStr = input => {
+const _toStr = (input) => {
   switch (typeof input) {
     case "undefined":
     case "symbol":
@@ -34,7 +34,7 @@ const requestRaw = ({ url, method, query, data, headers }) =>
 
     const requestOptions = {
       method: method ? method : data ? "POST" : "GET",
-      headers
+      headers,
     }
 
     const req =
@@ -67,5 +67,5 @@ const request = async ({ url, method, query, data, headers }) => {
 
 module.exports = {
   requestRaw,
-  request
+  request,
 }

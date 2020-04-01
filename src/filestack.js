@@ -7,8 +7,8 @@ const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
 const copyFile = promisify(fs.copyFile)
 
-const newFilestack = filepath => {
-  const flush = async lines => {
+const newFilestack = (filepath) => {
+  const flush = async (lines) => {
     try {
       await writeFile(filepath, lines.join("\n"))
     } catch (err) {
@@ -21,8 +21,8 @@ const newFilestack = filepath => {
       const data = (await readFile(filepath)).toString()
       return data
         .split("\n")
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
     } catch (err) {
       if (err.code !== "ENOENT") {
         throw err
@@ -70,7 +70,7 @@ const newFilestack = filepath => {
     return lines.length
   }
 
-  const backup = async backupFilepath => {
+  const backup = async (backupFilepath) => {
     try {
       await copyFile(filepath, backupFilepath)
     } catch (err) {
@@ -78,7 +78,7 @@ const newFilestack = filepath => {
     }
   }
 
-  const restore = async restoreFile => {
+  const restore = async (restoreFile) => {
     try {
       await copyFile(restoreFile, filepath)
     } catch (err) {
@@ -96,7 +96,7 @@ const newFilestack = filepath => {
     peek,
     size,
     backup,
-    restore
+    restore,
   }
 }
 

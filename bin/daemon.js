@@ -14,7 +14,7 @@ const PID_FILE = "qget.pid"
 const LOG_FILE = "qget.txt"
 const SCRIPT = path.join(__dirname, "cli.js")
 
-const _kill = pid => {
+const _kill = (pid) => {
   if (Number.isFinite(pid)) {
     const killCommand = process.platform === "win32" ? `taskkill /f /pid ${pid}` : `kill ${pid}`
     execSync(killCommand, { stdio: "ignore" })
@@ -31,7 +31,7 @@ const _kill = pid => {
   const foutlog = await open(LOG_FILE, "w")
   const child = spawn(process.execPath, [SCRIPT].concat(process.argv.slice(2)), {
     stdio: ["ignore", foutlog, foutlog],
-    detached: true
+    detached: true,
   })
   await writeFile(PID_FILE, String(child.pid))
   child.unref()

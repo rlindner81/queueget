@@ -18,29 +18,19 @@ const assert = (condition, errorMessage) => {
 }
 
 // https://stackoverflow.com/questions/13627308/add-st-nd-rd-and-th-ordinal-suffix-to-a-number
-const ordinal = a =>
+const ordinal = (a) =>
   a + ["th", "st", "nd", "rd"][((a = ~~(a < 0 ? -a : a) % 100) > 10 && a < 14) || (a %= 10) > 3 ? 0 : a]
 
 const randomBytes = promisify(crypto.randomBytes)
 
-const sleep = sec => new Promise(resolve => setTimeout(resolve, sec * 1000))
+const sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000))
 
-const randomHex = async byteLength => (await randomBytes(byteLength)).toString("hex")
+const randomHex = async (byteLength) => (await randomBytes(byteLength)).toString("hex")
 
-const base64encode = input => Buffer.from(input).toString("base64")
-const base64decode = input => Buffer.from(input, "base64")
-const base64urlEncode = input =>
-  base64encode(input)
-    .replace(/\+/g, "-")
-    .replace(/_/g, "/")
-    .replace(/=/g, "")
-const base64urlDecode = input =>
-  base64decode(
-    input
-      .replace(/-/g, "+")
-      .replace(/\//g, "_")
-      .replace(/,/g, "")
-  )
+const base64encode = (input) => Buffer.from(input).toString("base64")
+const base64decode = (input) => Buffer.from(input, "base64")
+const base64urlEncode = (input) => base64encode(input).replace(/\+/g, "-").replace(/_/g, "/").replace(/=/g, "")
+const base64urlDecode = (input) => base64decode(input.replace(/-/g, "+").replace(/\//g, "_").replace(/,/g, ""))
 
 const aesEcbDecipher = (key, iv = null, autoPadding = false) =>
   crypto.createDecipheriv("aes-128-ecb", key, iv).setAutoPadding(autoPadding)
@@ -63,5 +53,5 @@ module.exports = {
   aesEcbDecipher,
   aesCbcDecipher,
   aesCtrDecipher,
-  decrypt
+  decrypt,
 }

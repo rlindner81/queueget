@@ -12,11 +12,12 @@
     "src"
   ],
   "scripts": {
-    "lint": "eslint . --fix",
     "test": "jest",
+    "lint": "npm run eslint && npm run prettier",
+    "eslint": "eslint . --fix",
+    "prettier": "prettier \"**/*.{js,json,md,yml,yaml}\" --write --loglevel error",
     "prepublishOnly": "npm audit && npm run lint && npm run test",
-    "update-lock": "pushpull .npmrc --on '#WRITE_LOCK' && npm up && npm ddp && pushpull .npmrc --off '#WRITE_LOCK'",
-    "upgrade-lock": "pushpull .npmrc --on '#WRITE_LOCK' && shx rm -rf 'package-lock.json node_modules' && npm i && npm ddp && pushpull .npmrc --off '#WRITE_LOCK'"
+    "upgrade-lock": "shx rm -rf package-lock.json node_modules && npm i --package-lock=true"
   },
   "engines": {
     "node": ">=10.0.0",
@@ -24,12 +25,10 @@
   },
   "devDependencies": {
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.9.0",
-    "eslint-plugin-jest": "^22.21.0",
-    "eslint-plugin-prettier": "^3.1.1",
-    "jest": "^24.9.0",
-    "prettier": "^1.19.1",
-    "pushpulljs": "^1.0.5",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-jest": "^23.8.2",
+    "jest": "^25.1.0",
+    "prettier": "^2.0.2",
     "shx": "^0.3.2"
   },
   "keywords": [

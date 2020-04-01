@@ -20,7 +20,7 @@ const queue = async ({
   historyFile = "queue_history.txt",
   restoreFile,
   retries = 3,
-  routername
+  routername,
 }) => {
   const router = _getAdapter(routername, routers)
   if (router != null) {

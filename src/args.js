@@ -13,11 +13,11 @@ options:
   --router TYPE      router for ip refreshing, e.g. fritzbox
 `
 
-const _unquoteArg = arg => {
+const _unquoteArg = (arg) => {
   return arg.replace(/^'(.+)'$/, "$1").replace(/^"(.+)"$/, "$1")
 }
 
-const parseArgs = args => {
+const parseArgs = (args) => {
   let queueFile = "queue.txt"
   let historyFile = "queue_history.txt"
   let restoreFile = null
@@ -71,5 +71,5 @@ const parseArgs = args => {
 
 module.exports = {
   usage,
-  parseArgs
+  parseArgs,
 }

@@ -40,8 +40,8 @@ module.exports = {
       branches: 0,
       functions: 0,
       lines: 0,
-      statements: 0
-    }
+      statements: 0,
+    },
   },
 
   // A path to a custom dependency extractor
@@ -134,7 +134,7 @@ module.exports = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  testEnvironment: "node"
+  testEnvironment: "node",
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},

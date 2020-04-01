@@ -1,5 +1,5 @@
 "use strict"
 
 module.exports = {
-  fritzbox: require("./fritzbox")
+  fritzbox: require("./fritzbox"),
 }
