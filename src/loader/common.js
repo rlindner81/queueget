@@ -1,12 +1,14 @@
 "use strict"
 
 const stream = require("stream")
-const { createWriteStream } = require("fs")
+const fs = require("fs")
 const { once } = require("events")
 const { promisify } = require("util")
 const { requestRaw } = require("../request")
 
 const finished = promisify(stream.finished)
+const fsOpenAsync = promisify(fs.open)
+const fsCloseAsync = promisify(fs.close)
 
 const _humanBytes = (size) => {
   const units = ["B", "KB", "MB", "GB", "TB"]
@@ -34,7 +36,12 @@ const commonload = async ({
   let totalLoaded = 0
   let totalLength = 0
 
-  const fileOut = createWriteStream(filename)
+  const fd = await fsOpenAsync(filename, "a+");
+  const fileIn = createReadStream(null, { fd, autoClose: false, start:0 })
+  fileIn.end()
+  await finished(fileIn)
+
+  const fileOut = createWriteStream(null, { fd, autoClose: false, start: x })
   for (;;) {
     let contentRangeFrom = 0
     let contentRangeTo = 0
@@ -95,6 +102,7 @@ const commonload = async ({
   }
   fileOut.end()
   await finished(fileOut)
+  await fsCloseAsync(fd);
   return [filename]
 }
 
