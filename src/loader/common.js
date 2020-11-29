@@ -7,8 +7,12 @@ const { promisify } = require("util")
 const { requestRaw } = require("../request")
 
 const finished = promisify(stream.finished)
+const fsAccessAsync = promisify(fs.access)
+const fsRenameAsync = promisify(fs.rename)
 const fsOpenAsync = promisify(fs.open)
 const fsCloseAsync = promisify(fs.close)
+
+const PARTIAL_SUFFIX = ".partial"
 
 const _humanBytes = (size) => {
   const units = ["B", "KB", "MB", "GB", "TB"]
@@ -32,16 +36,30 @@ const commonload = async ({
   },
   chunkTransform = async (a) => a,
 }) => {
+  if (await fsAccessAsync(filename)) {
+    console.log(`file exists ${filename}`)
+    return
+  }
   console.log(`loading file ${filename}`)
+
   let totalLoaded = 0
   let totalLength = 0
 
-  const fd = await fsOpenAsync(filename, "a+");
-  const fileIn = createReadStream(null, { fd, autoClose: false, start:0 })
-  fileIn.end()
-  await finished(fileIn)
+  const filenamePartial = `${filename}${PARTIAL_SUFFIX}`
+  const partialExists = await fsAccessAsync(filenamePartial)
+  const fd = await fsOpenAsync(filenamePartial, "a+")
 
-  const fileOut = createWriteStream(null, { fd, autoClose: false, start: x })
+  if (partialExists) {
+    const fileIn = fs.createReadStream(null, { fd, autoClose: false, start: totalLoaded })
+    for await (const chunk of fileIn) {
+      await chunkTransform(chunk)
+      totalLoaded += chunk.length
+    }
+    fileIn.end()
+    await finished(fileIn)
+  }
+
+  const fileOut = fs.createWriteStream(null, { fd, autoClose: false, start: totalLoaded })
   for (;;) {
     let contentRangeFrom = 0
     let contentRangeTo = 0
@@ -102,7 +120,9 @@ const commonload = async ({
   }
   fileOut.end()
   await finished(fileOut)
-  await fsCloseAsync(fd);
+
+  await fsCloseAsync(fd)
+  await fsRenameAsync(filenamePartial, filename)
   return [filename]
 }
 
