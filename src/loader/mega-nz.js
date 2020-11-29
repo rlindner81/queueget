@@ -92,8 +92,10 @@ const load = async (url, urlParts, queueStack, router) => {
   let linkType, linkId, linkKey
   if (urlPathname === "/") {
     ;[linkType, linkId, linkKey] = urlHash.split("!")
-  } else if (urlPathname.startsWith("/folder")) {
-    ;[linkType, linkId, linkKey] = [LINK_TYPE.FOLDER, urlPathname.substring(8), urlHash.substring(1)]
+  } else if (urlPathname.startsWith("/file/")) {
+    ;[linkType, linkId, linkKey] = [LINK_TYPE.FILE, urlPathname.substring("/file/".length), urlHash.substring(1)]
+  } else if (urlPathname.startsWith("/folder/")) {
+    ;[linkType, linkId, linkKey] = [LINK_TYPE.FOLDER, urlPathname.substring("/folder/".length), urlHash.substring(1)]
   } else {
     throw new Error(`unknown pathname ${urlPathname}`)
   }
