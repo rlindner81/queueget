@@ -76,6 +76,7 @@ const load = async (url, urlParts, queueStack, router) => {
           }
           return true
         }
+        throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
       },
       chunkTransform: (chunk) => decipher.update(chunk),
     })
