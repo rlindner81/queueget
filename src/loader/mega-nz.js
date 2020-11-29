@@ -1,6 +1,5 @@
 "use strict"
 
-const util = require("util")
 const { commonload } = require("./common")
 const { sleep, base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper")
 const { request } = require("../request")
@@ -96,7 +95,7 @@ const load = async (url, urlParts, queueStack, router) => {
   } else if (urlPathname.startsWith("/folder")) {
     ;[linkType, linkId, linkKey] = [LINK_TYPE.FOLDER, urlPathname.substring(8), urlHash.substring(1)]
   } else {
-    throw new Error(util.format("unknown pathname %s", urlPathname))
+    throw new Error(`unknown pathname ${urlPathname}`)
   }
 
   switch (linkType) {

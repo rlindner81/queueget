@@ -1,6 +1,6 @@
 {
   "name": "queueget",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Download links from a queue file",
   "bin": {
     "qget": "./bin/cli.js",
