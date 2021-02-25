@@ -27,9 +27,12 @@ const load = async (url, urlParts, queueStack, router) => {
         await sleep(60.5)
       } else if (code === 275) {
         // long-wait refresh-ip
+        console.info("limit exceeded")
         if (router) {
-          console.info("limit exceeded refreshing ip")
+          console.info("refreshing ip")
           await router.refreshIp()
+        } else {
+          return null
         }
       } else {
         throw new Error(`unexpected code ${code}`)
