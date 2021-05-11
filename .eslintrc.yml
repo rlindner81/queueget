@@ -14,3 +14,4 @@ extends:
   - prettier
 rules:
   strict: [error]
+  no-constant-condition: [error, { checkLoops: false }]
