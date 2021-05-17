@@ -57,10 +57,8 @@ const commonload = async ({
   }
   console.log(`loading file ${filename}`)
 
-  const startTime = Date.now()
   let totalLoaded = 0
   let totalLength = 0
-  let totalElapsedTime = 0
 
   const filenamePartial = `${filename}${PARTIAL_SUFFIX}`
   const partialExists = await _existsAsync(filenamePartial)
@@ -70,17 +68,14 @@ const commonload = async ({
     for await (const chunk of fileIn) {
       await chunkTransform(chunk)
       totalLoaded += chunk.length
-      totalElapsedTime = Date.now() - startTime
-      let sleeptime = bytesPerSecond === 0 ? 0 : (totalLoaded / bytesPerSecond) * 1000 - totalElapsedTime
-      if (sleeptime > 0) {
-        await sleep(sleeptime)
-      }
     }
     fileIn.destroy()
   }
 
   const fileOut = fs.createWriteStream(filenamePartial, { flags: "a", start: totalLoaded })
   for (;;) {
+    const contentLoadStartTime = Date.now()
+    let contentLoadElapsedTime = 0
     let contentRangeFrom = 0
     let contentRangeTo = 0
     let contentLoaded = 0
@@ -126,9 +121,17 @@ const commonload = async ({
       }
       contentLoaded += chunk.length
 
+      // Console update
       if ((contentLoaded / contentLength) * 100 > dots) {
         dots++
         process.stdout.write(".")
+      }
+
+      // Throttling
+      contentLoadElapsedTime = Date.now() - contentLoadStartTime
+      let sleeptime = bytesPerSecond === 0 ? 0 : (contentLoaded / bytesPerSecond) * 1000 - contentLoadElapsedTime
+      if (sleeptime > 0) {
+        await sleep(sleeptime)
       }
     }
     totalLoaded += contentLoaded
