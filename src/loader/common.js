@@ -9,8 +9,13 @@ const { requestRaw } = require("../request")
 const finished = promisify(stream.finished)
 const fsAccessAsync = promisify(fs.access)
 const fsRenameAsync = promisify(fs.rename)
+const sleep = promisify(setTimeout)
 
 const PARTIAL_SUFFIX = ".partial"
+const BYTES_PER_SECOND_ENV_VARIABLE = "THROTTLE_BPS"
+const bytesPerSecondDefault = Object.prototype.hasOwnProperty.call(process.env, BYTES_PER_SECOND_ENV_VARIABLE)
+  ? parseInt(process.env[BYTES_PER_SECOND_ENV_VARIABLE])
+  : 0
 
 const _existsAsync = async (filename) => {
   try {
@@ -40,6 +45,7 @@ const commonload = async ({
   filename,
   url,
   requestSize = 0,
+  bytesPerSecond = bytesPerSecondDefault,
   errorStatusHandler = async (response) => {
     throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
   },
@@ -51,8 +57,10 @@ const commonload = async ({
   }
   console.log(`loading file ${filename}`)
 
+  const startTime = Date.now()
   let totalLoaded = 0
   let totalLength = 0
+  let totalElapsedTime = 0
 
   const filenamePartial = `${filename}${PARTIAL_SUFFIX}`
   const partialExists = await _existsAsync(filenamePartial)
@@ -62,6 +70,11 @@ const commonload = async ({
     for await (const chunk of fileIn) {
       await chunkTransform(chunk)
       totalLoaded += chunk.length
+      totalElapsedTime = Date.now() - startTime
+      let sleeptime = bytesPerSecond === 0 ? 0 : (totalLoaded / bytesPerSecond) * 1000 - totalElapsedTime
+      if (sleeptime > 0) {
+        await sleep(sleeptime)
+      }
     }
     fileIn.destroy()
   }
