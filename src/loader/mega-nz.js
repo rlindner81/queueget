@@ -55,7 +55,7 @@ const _decryptAttributes = (attributes, key) => {
   return attributes
 }
 
-const load = async (url, urlParts, queueStack, router) => {
+const load = async (url, urlParts, { limit, router }) => {
   const _downloadAndDecrypt = (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
     const decipher = aesCtrDecipher(_foldKey(key), iv)
@@ -63,6 +63,7 @@ const load = async (url, urlParts, queueStack, router) => {
     return commonload({
       filename,
       url: link,
+      bytesPerSecond: limit,
       requestSize,
       errorStatusHandler: async (response) => {
         if (response.statusCode === 509) {

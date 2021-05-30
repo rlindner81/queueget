@@ -12,10 +12,6 @@ const fsRenameAsync = promisify(fs.rename)
 const sleep = promisify(setTimeout)
 
 const PARTIAL_SUFFIX = ".partial"
-const BYTES_PER_SECOND_ENV_VARIABLE = "THROTTLE_BPS"
-const bytesPerSecondDefault = Object.prototype.hasOwnProperty.call(process.env, BYTES_PER_SECOND_ENV_VARIABLE)
-  ? parseInt(process.env[BYTES_PER_SECOND_ENV_VARIABLE])
-  : 0
 
 const _existsAsync = async (filename) => {
   try {
@@ -45,7 +41,7 @@ const commonload = async ({
   filename,
   url,
   requestSize = 0,
-  bytesPerSecond = bytesPerSecondDefault,
+  bytesPerSecond = 0,
   errorStatusHandler = async (response) => {
     throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
   },

@@ -4,7 +4,7 @@ const { commonload } = require("./common")
 const { request, requestRaw } = require("../request")
 const { group, sleep } = require("../helper")
 
-const load = async (url, urlParts, queueStack, router) => {
+const load = async (url, urlParts, { limit, router }) => {
   const firstData = (await request({ url })).data
   const link = group(
     /<a class="wp-body-box-action-red" id="file-download-free-action-slow" href="#" data-href="(.\S+)">Slow Download<\/a>/,
@@ -43,7 +43,7 @@ const load = async (url, urlParts, queueStack, router) => {
     }
   }
   console.log("after waiting")
-  return commonload({ filename, url: link })
+  return commonload({ filename, url: link, bytesPerSecond: limit })
 }
 
 module.exports = {

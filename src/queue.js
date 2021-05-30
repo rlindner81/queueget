@@ -20,11 +20,15 @@ const queue = async ({
   historyFile = "queue_history.txt",
   restoreFile,
   retries = 3,
+  limit,
   routername,
 }) => {
   const router = _getAdapter(routername, routers)
   if (router != null) {
     console.log(`using router ${router.name}`)
+  }
+  if (limit != 0) {
+    console.log(`using limit ${limit} bytes per second`)
   }
 
   const queueStack = newFilestack(queueFile)
@@ -55,7 +59,7 @@ const queue = async ({
       try {
         const loader = _getAdapter(hostname, loaders)
         console.info(`using hoster ${loader.name} for ${url}`)
-        filenames = await loader.load(url, urlParts, queueStack, router)
+        filenames = await loader.load(url, urlParts, { queueStack, limit, router })
         break
       } catch (err) {
         console.debug(err.stack || err.message)
