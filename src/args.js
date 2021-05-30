@@ -32,7 +32,7 @@ const parseArgs = (args) => {
     .join(" ")
     .trim()
     .replace(
-      /--(help|queue|history|restore|retries|router)\s*(.*?)\s*(?=$|--(?:help|queue|history|restore|retries|router))/g,
+      /--(help|queue|history|restore|retries|limit|router)\s*(.*?)\s*(?=$|--(?:help|queue|history|restore|retries|router))/g,
       (_, option, arg) => {
         const unquotedArg = _unquoteArg(arg)
         parsedOptions++
