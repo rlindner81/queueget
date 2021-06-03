@@ -2,9 +2,9 @@
 
 const { commonload } = require("./common")
 
-const load = (url, urlParts) => {
+const load = (url, urlParts, { limit }) => {
   const filename = urlParts.pathname.replace(/^\//, "").replace(/[^.\w]/g, "-")
-  return commonload({ filename, url })
+  return commonload({ filename, url, bytesPerSecond: limit })
 }
 
 module.exports = {

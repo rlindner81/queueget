@@ -1,5 +1,5 @@
 {
-  "extends": [ "config:base" ],
+  "extends": ["config:base"],
   "groupName": "all",
   "major": { "enabled": false },
   "automerge": true

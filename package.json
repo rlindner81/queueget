@@ -1,6 +1,6 @@
 {
   "name": "queueget",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "description": "Download links from a queue file",
   "bin": {
     "qget": "./bin/cli.js",
@@ -17,7 +17,7 @@
     "eslint": "eslint . --fix",
     "prettier": "prettier \"**/*.{js,json,md,yml,yaml}\" --write --loglevel error",
     "prepublishOnly": "npm audit && npm run lint && npm run test",
-    "upgrade-lock": "shx rm -rf package-lock.json node_modules && npm i --package-lock=true"
+    "upgrade-lock": "npx shx rm -rf package-lock.json node_modules && npm i --package-lock=true"
   },
   "engines": {
     "node": ">=10.0.0",

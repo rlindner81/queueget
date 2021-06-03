@@ -4,7 +4,7 @@ const { commonload } = require("./common")
 const { request } = require("../request")
 const { group, sleep } = require("../helper")
 
-const load = async (url, urlParts, queueStack, router) => {
+const load = async (url, urlParts, { limit, router }) => {
   const firstData = (await request({ url })).data
   const adz = group(/name="adz" value="([.\d]+)"/, firstData, 1)
   const filename = group(/Filename :<\/td>[\s\S]*?<td.*?>(.+?)<\/td>/, firstData, 1)
@@ -26,7 +26,7 @@ const load = async (url, urlParts, queueStack, router) => {
     if (realLink === null) {
       throw new Error(`could not read real link for url ${url}`)
     }
-    return commonload({ filename, url: realLink })
+    return commonload({ filename, url: realLink, bytesPerSecond: limit })
   }
 }
 

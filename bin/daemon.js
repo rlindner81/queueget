@@ -22,11 +22,16 @@ const _kill = (pid) => {
 }
 
 ;(async () => {
+  const [command] = process.argv.slice(2)
   try {
     const pid = parseFloat((await readFile(PID_FILE)).toString())
     _kill(pid)
     // eslint-disable-next-line no-empty
   } catch (err) {}
+  if (/(?:stop|kill)/gi.test(command)) {
+    console.log("stopping queueget")
+    process.exit(0)
+  }
 
   const foutlog = await open(LOG_FILE, "w")
   const child = spawn(process.execPath, [SCRIPT].concat(process.argv.slice(2)), {

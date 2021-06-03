@@ -10,6 +10,7 @@ options:
   --history FILE     links of the past (defaults to queue_history.txt)
   --restore FILE     restore queue before starting for debugging
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
+  --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
 `
 
@@ -22,6 +23,7 @@ const parseArgs = (args) => {
   let historyFile = "queue_history.txt"
   let restoreFile = null
   let retries = 3
+  let limit = 0
   let routername = null
   let help = false
 
@@ -30,7 +32,7 @@ const parseArgs = (args) => {
     .join(" ")
     .trim()
     .replace(
-      /--(help|queue|history|restore|retries|router)\s*(.*?)\s*(?=$|--(?:help|queue|history|restore|retries|router))/g,
+      /--(help|queue|history|restore|retries|limit|router)\s*(.*?)\s*(?=$|--(?:help|queue|history|restore|retries|router))/g,
       (_, option, arg) => {
         const unquotedArg = _unquoteArg(arg)
         parsedOptions++
@@ -54,6 +56,9 @@ const parseArgs = (args) => {
           case "retries":
             retries = parseFloat(unquotedArg)
             break
+          case "limit":
+            limit = parseFloat(unquotedArg)
+            break
           case "router":
             routername = unquotedArg
             break
@@ -66,7 +71,7 @@ const parseArgs = (args) => {
     )
   assert(rest.length === 0, `missed (partial) arguments '${rest}'`)
 
-  return { help, queueFile, historyFile, restoreFile, retries, routername }
+  return { help, queueFile, historyFile, restoreFile, retries, limit, routername }
 }
 
 module.exports = {

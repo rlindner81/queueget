@@ -9,6 +9,7 @@ const { requestRaw } = require("../request")
 const finished = promisify(stream.finished)
 const fsAccessAsync = promisify(fs.access)
 const fsRenameAsync = promisify(fs.rename)
+const sleep = promisify(setTimeout)
 
 const PARTIAL_SUFFIX = ".partial"
 
@@ -40,6 +41,7 @@ const commonload = async ({
   filename,
   url,
   requestSize = 0,
+  bytesPerSecond = 0,
   errorStatusHandler = async (response) => {
     throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
   },
@@ -68,6 +70,8 @@ const commonload = async ({
 
   const fileOut = fs.createWriteStream(filenamePartial, { flags: "a", start: totalLoaded })
   for (;;) {
+    const contentLoadStartTime = Date.now()
+    let contentLoadElapsedTime = 0
     let contentRangeFrom = 0
     let contentRangeTo = 0
     let contentLoaded = 0
@@ -113,9 +117,17 @@ const commonload = async ({
       }
       contentLoaded += chunk.length
 
+      // Console update
       if ((contentLoaded / contentLength) * 100 > dots) {
         dots++
         process.stdout.write(".")
+      }
+
+      // Throttling
+      contentLoadElapsedTime = Date.now() - contentLoadStartTime
+      let sleeptime = bytesPerSecond === 0 ? 0 : (contentLoaded / bytesPerSecond) * 1000 - contentLoadElapsedTime
+      if (sleeptime > 0) {
+        await sleep(sleeptime)
       }
     }
     totalLoaded += contentLoaded
