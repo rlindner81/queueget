@@ -40,6 +40,14 @@ const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) =>
   crypto.createDecipheriv("aes-128-ctr", key, iv).setAutoPadding(autoPadding)
 const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
+const wrapSyncInDebug = (fn) =>
+  function () {
+    console.log(`entering ${fn.name}`, JSON.stringify(arguments))
+    const result = fn.apply(fn, arguments)
+    console.log(`exiting ${fn.name}`, JSON.stringify(result))
+    return result
+  }
+
 module.exports = {
   group,
   assert,
@@ -54,4 +62,5 @@ module.exports = {
   aesCbcDecipher,
   aesCtrDecipher,
   decrypt,
+  wrapSyncInDebug,
 }

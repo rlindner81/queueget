@@ -45,7 +45,8 @@ const commonload = async ({
   errorStatusHandler = async (response) => {
     throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
   },
-  chunkTransform = async (a) => a,
+  chunkTransform = null,
+  finalize = null,
 }) => {
   if (await _existsAsync(filename)) {
     console.log(`file exists ${filename}`)
@@ -62,7 +63,7 @@ const commonload = async ({
   if (partialExists) {
     const fileIn = fs.createReadStream(filenamePartial)
     for await (const chunk of fileIn) {
-      await chunkTransform(chunk)
+      chunkTransform && (await chunkTransform(chunk))
       totalLoaded += chunk.length
     }
     fileIn.destroy()
@@ -112,7 +113,7 @@ const commonload = async ({
     contentLength = contentRangeTo - contentRangeFrom + 1
 
     for await (const chunk of response) {
-      if (!fileOut.write(await chunkTransform(chunk))) {
+      if (!fileOut.write(chunkTransform ? await chunkTransform(chunk) : chunk)) {
         await once(fileOut, "drain")
       }
       contentLoaded += chunk.length
@@ -137,6 +138,7 @@ const commonload = async ({
       break
     }
   }
+  finalize && fileOut.write(finalize())
   fileOut.end()
   await finished(fileOut)
 

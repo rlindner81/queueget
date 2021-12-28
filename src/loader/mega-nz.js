@@ -80,6 +80,7 @@ const load = async (url, urlParts, { limit, router }) => {
         throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
       },
       chunkTransform: (chunk) => decipher.update(chunk),
+      finalize: () => decipher.final(),
     })
   }
 
