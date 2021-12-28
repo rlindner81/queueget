@@ -46,7 +46,7 @@ const queue = async ({
     if (entry === null) {
       break
     }
-    const match = /https?:\/\/\S+/.exec(entry)
+    const match = /^https?:\/\/\S+/.exec(entry)
     if (match === null) {
       await queueStack.pop()
       continue
