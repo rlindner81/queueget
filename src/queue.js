@@ -27,7 +27,7 @@ const queue = async ({
   if (router != null) {
     console.log(`using router ${router.name}`)
   }
-  if (limit != 0) {
+  if (limit !== 0) {
     console.log(`using limit ${limit} bytes per second`)
   }
 
@@ -39,7 +39,7 @@ const queue = async ({
   console.log(`loading queue ${queueFile} (${await queueStack.size()})`)
 
   const historyStack = newFilestack(historyFile)
-  console.log(`saving history ${historyFile} (${await historyStack.size()})`)
+  console.log(`saving history ${historyFile}`)
 
   for (;;) {
     const entry = await queueStack.peek()
@@ -62,7 +62,7 @@ const queue = async ({
         filenames = await loader.load(url, urlParts, { queueStack, limit, router })
         break
       } catch (err) {
-        console.debug(err.stack || err.message)
+        console.error(err.stack || err.message)
         if (++retry <= retries) {
           console.warn(`waiting ${RETRY_FREQUENCY}sec for try ${retry} or ${retries}`)
           await sleep(RETRY_FREQUENCY)
@@ -73,9 +73,9 @@ const queue = async ({
     }
     await queueStack.pop()
     if (filenames && Array.isArray(filenames) && filenames.length > 0) {
-      await historyStack.pushTop(entry, ...filenames)
+      await historyStack.pushTop(entry, ...filenames, "")
     } else {
-      await historyStack.pushTop(entry)
+      await historyStack.pushTop(entry, "")
     }
   }
 }
