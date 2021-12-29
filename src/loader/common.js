@@ -5,6 +5,7 @@ const fs = require("fs")
 const { once } = require("events")
 const { promisify } = require("util")
 const { requestRaw } = require("../request")
+const { cursorBackward, cursorForward } = require("../helper")
 
 const finished = promisify(stream.finished)
 const fsAccessAsync = promisify(fs.access)
@@ -12,6 +13,7 @@ const fsRenameAsync = promisify(fs.rename)
 const sleep = promisify(setTimeout)
 
 const PARTIAL_SUFFIX = ".partial"
+const MAX_DOTS = 100
 
 const _existsAsync = async (filename) => {
   try {
@@ -45,11 +47,11 @@ const commonload = async ({
   errorStatusHandler = async (response) => {
     throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
   },
-  chunkTransform = async (a) => a,
+  chunkTransform,
 }) => {
   if (await _existsAsync(filename)) {
     console.log(`file exists ${filename}`)
-    return
+    return [filename]
   }
   console.log(`loading file ${filename}`)
 
@@ -60,9 +62,10 @@ const commonload = async ({
   const partialExists = await _existsAsync(filenamePartial)
 
   if (partialExists) {
+    chunkTransform && chunkTransform.initialize()
     const fileIn = fs.createReadStream(filenamePartial)
     for await (const chunk of fileIn) {
-      await chunkTransform(chunk)
+      chunkTransform && (await chunkTransform.update(chunk))
       totalLoaded += chunk.length
     }
     fileIn.destroy()
@@ -110,15 +113,22 @@ const commonload = async ({
     }
 
     contentLength = contentRangeTo - contentRangeFrom + 1
+    chunkTransform && !partialExists && chunkTransform.initialize()
+
+    // Prepare dots
+    process.stdout.write("[")
+    cursorForward(MAX_DOTS)
+    process.stdout.write("]")
+    cursorBackward(MAX_DOTS + 1)
 
     for await (const chunk of response) {
-      if (!fileOut.write(await chunkTransform(chunk))) {
+      if (!fileOut.write(chunkTransform ? chunkTransform.update(chunk) : chunk)) {
         await once(fileOut, "drain")
       }
       contentLoaded += chunk.length
 
       // Console update
-      if ((contentLoaded / contentLength) * 100 > dots) {
+      if ((contentLoaded / contentLength) * MAX_DOTS > dots) {
         dots++
         process.stdout.write(".")
       }
@@ -130,6 +140,7 @@ const commonload = async ({
         await sleep(sleeptime)
       }
     }
+    chunkTransform && fileOut.write(chunkTransform.finalize())
     totalLoaded += contentLoaded
     process.stdout.write("\n")
 

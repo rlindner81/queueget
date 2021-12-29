@@ -40,6 +40,29 @@ const aesCtrDecipher = (key, iv = Buffer.alloc(16, 0), autoPadding = false) =>
   crypto.createDecipheriv("aes-128-ctr", key, iv).setAutoPadding(autoPadding)
 const decrypt = (decipher, data) => Buffer.concat([decipher.update(data), decipher.final()])
 
+const wrapSyncInDebug =
+  (fn) =>
+  (...args) => {
+    console.log(`entering ${fn.name}`, JSON.stringify(arguments))
+    const result = fn.apply(fn, args)
+    console.log(`exiting ${fn.name}`, JSON.stringify(result))
+    return result
+  }
+const wrapAsyncInDebug =
+  (fn) =>
+  async (...args) => {
+    console.log("entering async %s", fn.name)
+    // console.log("arguments %O", args)
+    const result = await fn.apply(fn, args)
+    console.log("exiting async %s", fn.name)
+    // console.log("result %O", result)
+    return result
+  }
+
+const ESC = "\u001B["
+const cursorForward = (count = 1) => process.stdout.write(ESC + count + "C")
+const cursorBackward = (count = 1) => process.stdout.write(ESC + count + "D")
+
 module.exports = {
   group,
   assert,
@@ -54,4 +77,8 @@ module.exports = {
   aesCbcDecipher,
   aesCtrDecipher,
   decrypt,
+  wrapSyncInDebug,
+  wrapAsyncInDebug,
+  cursorForward,
+  cursorBackward,
 }

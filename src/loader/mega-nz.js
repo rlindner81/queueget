@@ -58,7 +58,7 @@ const _decryptAttributes = (attributes, key) => {
 const load = async (url, urlParts, { limit, router }) => {
   const _downloadAndDecrypt = (link, filename, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)])
-    const decipher = aesCtrDecipher(_foldKey(key), iv)
+    let decipher = null
     const requestSize = 500000000 // 0.5GB
     return commonload({
       filename,
@@ -79,7 +79,11 @@ const load = async (url, urlParts, { limit, router }) => {
         }
         throw new Error(`bad response ${response.statusCode} (${response.statusMessage})`)
       },
-      chunkTransform: (chunk) => decipher.update(chunk),
+      chunkTransform: {
+        initialize: () => (decipher = aesCtrDecipher(_foldKey(key), iv)),
+        update: (chunk) => decipher.update(chunk),
+        finalize: () => decipher.final(),
+      },
     })
   }
 
