@@ -37,11 +37,13 @@ const requestRaw = ({ url, method, query, data, headers }) =>
       headers,
     }
 
+    // console.log("request url %s", requestUrl)
     const req =
       requestUrl.protocol === "https:"
-        ? https.request(requestUrl, requestOptions, resolve)
-        : http.request(requestUrl, requestOptions, resolve)
+        ? https.request(requestUrl, requestOptions)
+        : http.request(requestUrl, requestOptions)
 
+    req.on("response", resolve)
     req.on("error", reject)
 
     if (data) {

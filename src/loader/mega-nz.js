@@ -36,7 +36,20 @@ const _api = async (query = null, data = null) => {
   if (!Array.isArray(data)) {
     data = [data]
   }
-  const response = await request({ method: "POST", url: "https://g.api.mega.co.nz/cs", query, data })
+  let response
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      response = await request({ method: "POST", url: "https://g.api.mega.co.nz/cs", query, data })
+      break
+    } catch (err) {
+      // NOTE: shameful workaround for sporadic unresolved ssl protocol bug
+      //  write EPROTO 8076:error:1421C0F8:SSL routines:set_client_ciphersuite:unknown cipher returned:c:\ws\deps\openssl\openssl\ssl\statem\statem_clnt.c:1343:
+      if (err.code === "EPROTO" && err.errno === -4046) {
+        continue
+      }
+      throw err
+    }
+  }
   const result = Array.isArray(response.data) && response.data.length === 1 ? response.data[0] : response.data
   if (typeof result === "number" && result < 0) {
     throw new Error("file does not exist")
