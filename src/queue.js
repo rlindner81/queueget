@@ -64,7 +64,7 @@ const queue = async ({
       } catch (err) {
         console.error(err.stack || err.message)
         if (++retry <= retries) {
-          console.warn(`waiting ${RETRY_FREQUENCY}sec for try ${retry} or ${retries}`)
+          console.warn(`waiting ${RETRY_FREQUENCY}sec for try ${retry} of ${retries}`)
           await sleep(RETRY_FREQUENCY)
         } else {
           break
