@@ -46,12 +46,19 @@ const queue = async ({
     if (entry === null) {
       break
     }
-    const match = /^https?:\/\/\S+/.exec(entry)
-    if (match === null) {
+    const base64Match = /^[A-Za-z0-9+/]+={0,3}$/.exec(entry)
+    if (base64Match !== null) {
+      await queueStack.pop()
+      await queueStack.pushTop(Buffer.from(entry, "base64").toString())
+      continue
+    }
+
+    const urlMatch = /^https?:\/\/\S+/.exec(entry)
+    if (urlMatch === null) {
       await queueStack.pop()
       continue
     }
-    const [url] = match
+    const [url] = urlMatch
     const urlParts = _url.parse(url)
     const { hostname } = urlParts
     let filenames = null
