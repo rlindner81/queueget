@@ -5,7 +5,7 @@ const fs = require("fs")
 const { once } = require("events")
 const { promisify } = require("util")
 const { requestRaw } = require("../request")
-const { cursorBackward, cursorForward } = require("../helper")
+const { readableBytes, cursorBackward, cursorForward } = require("../helper")
 
 const finished = promisify(stream.finished)
 const fsAccessAsync = promisify(fs.access)
@@ -23,19 +23,6 @@ const _existsAsync = async (filename) => {
     if (err.code === "ENOENT") {
       return false
     } else throw err
-  }
-}
-
-const _humanBytes = (size) => {
-  const units = ["B", "KB", "MB", "GB", "TB"]
-  let current = 1
-  let next = 1024
-  for (let index = 0; index < units.length; index++) {
-    if (index === units.length - 1 || size < next) {
-      return `${(size / current).toFixed(1)} ${units[index]}`
-    }
-    current = next
-    next *= 1024
   }
 }
 
@@ -58,11 +45,11 @@ const commonload = async ({
   let totalLoaded = 0
   let totalLength = 0
 
+  chunkTransform && chunkTransform.initialize()
   const filenamePartial = `${filename}${PARTIAL_SUFFIX}`
   const partialExists = await _existsAsync(filenamePartial)
 
   if (partialExists) {
-    chunkTransform && chunkTransform.initialize()
     const fileIn = fs.createReadStream(filenamePartial)
     for await (const chunk of fileIn) {
       chunkTransform && (await chunkTransform.update(chunk))
@@ -103,17 +90,16 @@ const commonload = async ({
       ? /bytes (\d+)-(\d+)\/(\d+)/.exec(contentRangeHeader).slice(1).map(parseFloat)
       : [0, parseFloat(contentLengthHeader) - 1, parseFloat(contentLengthHeader)]
     if (contentRangeFrom === 0 && contentRangeTo + 1 === totalLength) {
-      console.info(`receiving ${_humanBytes(totalLength)}`)
+      console.info(`receiving ${readableBytes(totalLength)}`)
     } else if (Number.isFinite(contentRangeFrom) && Number.isFinite(contentRangeTo) && Number.isFinite(totalLength)) {
       console.info(
-        `receiving from ${_humanBytes(contentRangeFrom + 1)} to ${_humanBytes(contentRangeTo + 1)} of ${_humanBytes(
+        `receiving from ${readableBytes(contentRangeFrom)} to ${readableBytes(contentRangeTo + 1)} of ${readableBytes(
           totalLength
         )}`
       )
     }
 
     contentLength = contentRangeTo - contentRangeFrom + 1
-    chunkTransform && !partialExists && chunkTransform.initialize()
 
     // Prepare dots
     process.stdout.write("[")
@@ -140,7 +126,6 @@ const commonload = async ({
         await sleep(sleeptime)
       }
     }
-    chunkTransform && fileOut.write(chunkTransform.finalize())
     totalLoaded += contentLoaded
     process.stdout.write("\n")
 
@@ -148,6 +133,7 @@ const commonload = async ({
       break
     }
   }
+  chunkTransform && fileOut.write(chunkTransform.finalize())
   fileOut.end()
   await finished(fileOut)
 
