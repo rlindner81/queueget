@@ -59,6 +59,19 @@ const wrapAsyncInDebug =
     return result
   }
 
+const readableBytes = (size) => {
+  const units = ["B", "KB", "MB", "GB", "TB"]
+  let current = 1
+  let next = 1024
+  for (let index = 0; index < units.length; index++) {
+    if (index === units.length - 1 || size < next) {
+      return `${(size / current).toFixed(1)} ${units[index]}`
+    }
+    current = next
+    next *= 1024
+  }
+}
+
 const ESC = "\u001B["
 const cursorForward = (count = 1) => process.stdout.write(ESC + count + "C")
 const cursorBackward = (count = 1) => process.stdout.write(ESC + count + "D")
@@ -81,4 +94,5 @@ module.exports = {
   wrapAsyncInDebug,
   cursorForward,
   cursorBackward,
+  readableBytes,
 }

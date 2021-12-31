@@ -2,7 +2,7 @@
 
 const _url = require("url")
 const newFilestack = require("./filestack")
-const { sleep } = require("./helper")
+const { sleep, readableBytes } = require("./helper")
 const loaders = require("./loader")
 const routers = require("./router")
 
@@ -28,7 +28,7 @@ const queue = async ({
     console.log(`using router ${router.name}`)
   }
   if (limit !== 0) {
-    console.log(`using limit ${limit} bytes per second`)
+    console.log(`using limit ${readableBytes(limit)} per second`)
   }
 
   const queueStack = newFilestack(queueFile)
