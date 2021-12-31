@@ -58,11 +58,11 @@ const commonload = async ({
   let totalLoaded = 0
   let totalLength = 0
 
+  chunkTransform && chunkTransform.initialize()
   const filenamePartial = `${filename}${PARTIAL_SUFFIX}`
   const partialExists = await _existsAsync(filenamePartial)
 
   if (partialExists) {
-    chunkTransform && chunkTransform.initialize()
     const fileIn = fs.createReadStream(filenamePartial)
     for await (const chunk of fileIn) {
       chunkTransform && (await chunkTransform.update(chunk))
@@ -113,7 +113,6 @@ const commonload = async ({
     }
 
     contentLength = contentRangeTo - contentRangeFrom + 1
-    chunkTransform && !partialExists && chunkTransform.initialize()
 
     // Prepare dots
     process.stdout.write("[")
@@ -140,7 +139,6 @@ const commonload = async ({
         await sleep(sleeptime)
       }
     }
-    chunkTransform && fileOut.write(chunkTransform.finalize())
     totalLoaded += contentLoaded
     process.stdout.write("\n")
 
@@ -148,6 +146,7 @@ const commonload = async ({
       break
     }
   }
+  chunkTransform && fileOut.write(chunkTransform.finalize())
   fileOut.end()
   await finished(fileOut)
 
