@@ -93,9 +93,9 @@ const commonload = async ({
       console.info(`receiving ${readableBytes(totalLength)}`)
     } else if (Number.isFinite(contentRangeFrom) && Number.isFinite(contentRangeTo) && Number.isFinite(totalLength)) {
       console.info(
-        `receiving from ${readableBytes(contentRangeFrom + 1)} to ${readableBytes(
-          contentRangeTo + 1
-        )} of ${readableBytes(totalLength)}`
+        `receiving from ${readableBytes(contentRangeFrom)} to ${readableBytes(contentRangeTo + 1)} of ${readableBytes(
+          totalLength
+        )}`
       )
     }
 
