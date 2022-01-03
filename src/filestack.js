@@ -19,7 +19,7 @@ const newFilestack = (filepath) => {
   const unflush = async () => {
     try {
       const data = (await readFile(filepath)).toString()
-      return data.split("\n").map((line) => line.trim())
+      return data.length === 0 ? [] : data.split("\n").map((line) => line.trim())
     } catch (err) {
       if (err.code !== "ENOENT") {
         throw err
