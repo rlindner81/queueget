@@ -114,7 +114,8 @@ const commonload = async ({
       contentLoaded += chunk.length
 
       // Console update
-      if ((contentLoaded / contentLength) * MAX_DOTS > dots) {
+      const contentLoadedDots = (contentLoaded / contentLength) * MAX_DOTS
+      while (contentLoadedDots > dots) {
         dots++
         process.stdout.write(".")
       }
