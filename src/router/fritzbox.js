@@ -3,6 +3,9 @@
 const { sleep } = require("../helper")
 const { request } = require("../request")
 
+const SLEEP_STEP = 20
+const SLEEP_LIMIT = 100
+
 const fritzCall = async (command) => {
   const data = `<?xml version="1.0" encoding="utf-8"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
@@ -23,10 +26,38 @@ const fritzCall = async (command) => {
   return response.data
 }
 
+const getExternalIp = async () => {
+  try {
+    const response = await request({
+      url: "https://api.ipify.org",
+    })
+    return response.data
+  } catch (err) {
+    return null
+  }
+}
+
 const refreshIp = async () => {
+  const oldIp = await getExternalIp()
   await fritzCall("ForceTermination")
   await fritzCall("RequestConnection")
-  await sleep(60)
+  if (oldIp) {
+    let newIp = oldIp
+    let sleepTime = 0
+    for (; newIp === oldIp && sleepTime <= SLEEP_LIMIT; sleepTime += SLEEP_STEP) {
+      await sleep(SLEEP_STEP)
+      newIp = await getExternalIp()
+    }
+    if (newIp !== oldIp) {
+      console.log('successfully changed ip from "%s" to "%s" in %isec', oldIp, newIp, sleepTime)
+    } else {
+      console.warn('warning: failed changing ip from "%s" in time limit %isec', oldIp, sleepTime)
+    }
+  } else {
+    const fallbackSleepTime = SLEEP_LIMIT / 2
+    console.warn("warning: could not read external ip, using fallback refresh time of %isec", fallbackSleepTime)
+    await sleep(fallbackSleepTime)
+  }
 }
 
 module.exports = {
