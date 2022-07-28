@@ -100,6 +100,11 @@ const load = async (url, urlParts, { limit, router }) => {
     })
   }
 
+  const _getFilename = (data, key) => {
+    const attributes = _decryptAttributes(data.at, key)
+    return attributes.n
+  }
+
   const _getFile = (data, key) => {
     const link = data.g
     const attributes = _decryptAttributes(data.at, key)
@@ -130,8 +135,9 @@ const load = async (url, urlParts, { limit, router }) => {
       let folderId = linkId
       let folderKey = base64urlDecode(linkKey)
       let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 })
-      let filenames = []
-      // NOTE: I want to do these sequentially for now
+      let files = []
+
+      // NOTE: collect filenames with associated decryption info, then sort and load them.
       for (const fileData of folderData.f) {
         if (fileData.t !== 0) {
           continue
@@ -141,9 +147,14 @@ const load = async (url, urlParts, { limit, router }) => {
         fileKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), fileKey)
         const nodeId = fileData.h
         const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId })
-        filenames = filenames.concat(await _getFile(nodeData, fileKey))
+        files.push({ filename: _getFilename(nodeData, fileKey), nodeData, fileKey })
       }
-      return filenames
+
+      files.sort((a, b) => a.filename.localeCompare(b.filename))
+      for (const { nodeData, fileKey } of files) {
+        await _getFile(nodeData, fileKey)
+      }
+      return files.map(({ filename }) => filename)
     }
     default:
       throw new Error(`unknown mega link type ${linkType}`)

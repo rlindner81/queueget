@@ -1,8 +1,9 @@
 "use strict"
 
 const { assert, ordinal } = require("./helper")
+const { version } = require("../package.json")
 
-const usage = () => `
+const usageText = () => `
 usage: qget [<options>]
 
 options:
@@ -13,6 +14,8 @@ options:
   --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
 `
+
+const versionText = () => `version ${version}`
 
 const _unquoteArg = (arg) => {
   return arg.replace(/^'(.+)'$/, "$1").replace(/^"(.+)"$/, "$1")
@@ -26,24 +29,30 @@ const parseArgs = (args) => {
   let limit = 0
   let routername = null
   let help = false
+  let version = false
 
   let parsedOptions = 0
   const rest = args
     .join(" ")
     .trim()
     .replace(
-      /--(help|queue|history|restore|retries|limit|router)\s*(.*?)\s*(?=$|--(?:help|queue|history|restore|retries|router))/g,
+      /--(help|version|queue|history|restore|retries|limit|router)\s*(.*?)\s*(?=$|--(?:help|version|queue|history|restore|retries|limit|router))/g,
       (_, option, arg) => {
         const unquotedArg = _unquoteArg(arg)
         parsedOptions++
 
-        if (option === "help") {
-          help = true
-          return ""
-        }
-        assert(unquotedArg.length !== 0, `${ordinal(parsedOptions)} option --${option} has no associated argument`)
+        assert(
+          ["version", "help"].includes(option) || unquotedArg.length !== 0,
+          `${ordinal(parsedOptions)} option --${option} has no associated argument`
+        )
 
         switch (option) {
+          case "version":
+            version = true
+            break
+          case "help":
+            help = true
+            break
           case "queue":
             queueFile = unquotedArg
             break
@@ -65,16 +74,16 @@ const parseArgs = (args) => {
           default:
             assert(false, `encountered unknown option --${option}`)
         }
-
         return ""
       }
     )
   assert(rest.length === 0, `missed (partial) arguments '${rest}'`)
 
-  return { help, queueFile, historyFile, restoreFile, retries, limit, routername }
+  return { help, version, queueFile, historyFile, restoreFile, retries, limit, routername }
 }
 
 module.exports = {
-  usage,
+  versionText,
+  usageText,
   parseArgs,
 }
