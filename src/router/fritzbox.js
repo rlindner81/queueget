@@ -1,10 +1,10 @@
-"use strict"
+"use strict";
 
-const { sleep } = require("../helper")
-const { request } = require("../request")
+const { sleep } = require("../helper");
+const { request } = require("../request");
 
-const SLEEP_STEP = 20
-const SLEEP_LIMIT = 100
+const SLEEP_STEP = 20;
+const SLEEP_LIMIT = 100;
 
 const fritzCall = async (command) => {
   const data = `<?xml version="1.0" encoding="utf-8"?>
@@ -12,7 +12,7 @@ const fritzCall = async (command) => {
 <s:Body>
 <u:${command} xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1"></u:${command}>
 </s:Body>
-</s:Envelope>`
+</s:Envelope>`;
   const response = await request({
     method: "POST",
     url: "http://fritz.box:49000/igdupnp/control/WANIPConn1",
@@ -22,45 +22,45 @@ const fritzCall = async (command) => {
       SOAPACTION: `urn:schemas-upnp-org:service:WANIPConnection:1#${command}`,
     },
     data,
-  })
-  return response.data
-}
+  });
+  return response.data;
+};
 
 const getExternalIp = async () => {
   try {
     const response = await request({
       url: "https://api.ipify.org",
-    })
-    return response.data
+    });
+    return response.data;
   } catch (err) {
-    return null
+    return null;
   }
-}
+};
 
 const refreshIp = async () => {
-  const oldIp = await getExternalIp()
-  await fritzCall("ForceTermination")
-  await fritzCall("RequestConnection")
+  const oldIp = await getExternalIp();
+  await fritzCall("ForceTermination");
+  await fritzCall("RequestConnection");
   if (oldIp) {
-    let newIp = oldIp
-    let sleepTime = 0
+    let newIp = oldIp;
+    let sleepTime = 0;
     for (; newIp === oldIp && sleepTime <= SLEEP_LIMIT; sleepTime += SLEEP_STEP) {
-      await sleep(SLEEP_STEP)
-      newIp = await getExternalIp()
+      await sleep(SLEEP_STEP);
+      newIp = await getExternalIp();
     }
     if (newIp !== oldIp) {
-      console.log('successfully changed ip from "%s" to "%s" in %isec', oldIp, newIp, sleepTime)
+      console.log('successfully changed ip from "%s" to "%s" in %isec', oldIp, newIp, sleepTime);
     } else {
-      console.warn('warning: failed changing ip from "%s" in time limit %isec', oldIp, sleepTime)
+      console.warn('warning: failed changing ip from "%s" in time limit %isec', oldIp, sleepTime);
     }
   } else {
-    const fallbackSleepTime = SLEEP_LIMIT / 2
-    console.warn("warning: could not read external ip, using fallback refresh time of %isec", fallbackSleepTime)
-    await sleep(fallbackSleepTime)
+    const fallbackSleepTime = SLEEP_LIMIT / 2;
+    console.warn("warning: could not read external ip, using fallback refresh time of %isec", fallbackSleepTime);
+    await sleep(fallbackSleepTime);
   }
-}
+};
 
 module.exports = {
   name: __filename.slice(__dirname.length + 1, -3),
   refreshIp,
-}
+};

@@ -1,34 +1,31 @@
 #!/usr/bin/env node
-"use strict"
+"use strict";
 
-const fs = require("fs")
-const { promisify } = require("util")
-const { versionText, usageText, parseArgs } = require("../src/args")
-const { queue } = require("../src/")
+const { versionText, usageText, parseArgs } = require("../src/args");
+const { tryAccess } = require("../src/helper");
+const { queue } = require("../src/");
 
-const access = promisify(fs.access)
-
-;(async () => {
-  let options
+(async () => {
+  let options;
   try {
-    options = await parseArgs(process.argv.slice(2))
+    options = await parseArgs(process.argv.slice(2));
   } catch (err) {
-    console.error("error:", err.message)
-    return
+    console.error("error:", err.message);
+    return;
   }
 
   if (!options || options.help) {
-    return console.info(usageText())
+    return console.info(usageText());
   }
 
   if (options.version) {
-    return console.info(versionText())
+    return console.info(versionText());
   }
 
-  try {
-    await access(options.queueFile)
-  } catch (err) {
-    return console.error(`error: could not access ${options.queueFile}`)
+  const queueFile = options.restoreFile || options.queueFile;
+  if (!(await tryAccess(queueFile))) {
+    return console.error(`error: could not access ${queueFile}`);
   }
-  await queue(options)
-})()
+
+  await queue(options);
+})();
