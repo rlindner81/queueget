@@ -140,22 +140,6 @@ const load = async (url, urlParts, { limit, router }) => {
       let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 });
       let files = [];
 
-      // shared_key = base64_to_a32(shared_enc_key)
-      // nodes = get_nodes_in_shared_folder(root_folder)
-      // for node in nodes:
-      // key = decrypt_node_key(node["k"], shared_key)
-      // if node["t"] == 0: # Is a file
-      // k = (key[0] ^ key[4], key[1] ^ key[5], key[2] ^ key[6], key[3] ^ key[7])
-      // elif node["t"] == 1: # Is a folder
-      // k = key
-      // attrs = decrypt_attr(base64_url_decode(node["a"]), k)
-      // file_name = attrs["n"]
-      // file_id = node["h"]
-
-      // def decrypt_node_key(key_str: str, shared_key: str) -> Tuple[int, ...]:
-      // encrypted_key = base64_to_a32(key_str.split(":")[1])
-      // return decrypt_key(encrypted_key, shared_key)
-
       // NOTE: collect filenames with associated decryption info, then sort and load them.
       for (const node of folderData.f) {
         const isFile = node.t === 0;
