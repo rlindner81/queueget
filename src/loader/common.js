@@ -2,32 +2,22 @@
 
 const stream = require("stream");
 const fs = require("fs");
+const { dirname } = require("path");
 const { once } = require("events");
 const { promisify } = require("util");
 const { requestRaw } = require("../request");
-const { readableBytes, cursorBackward, cursorForward } = require("../helper");
+const { readableBytes, cursorBackward, cursorForward, tryAccess } = require("../helper");
 
 const finished = promisify(stream.finished);
-const fsAccessAsync = promisify(fs.access);
 const fsRenameAsync = promisify(fs.rename);
+const fsMkdirAsync = promisify(fs.mkdir);
 const sleep = promisify(setTimeout);
 
 const PARTIAL_SUFFIX = ".partial";
 const MAX_DOTS = 100;
 
-const _existsAsync = async (filename) => {
-  try {
-    await fsAccessAsync(filename);
-    return true;
-  } catch (err) {
-    if (err.code === "ENOENT") {
-      return false;
-    } else throw err;
-  }
-};
-
 const commonload = async ({
-  filename,
+  filepath,
   url,
   requestSize = 0,
   bytesPerSecond = 0,
@@ -36,21 +26,25 @@ const commonload = async ({
   },
   chunkTransform,
 }) => {
-  if (await _existsAsync(filename)) {
-    console.log(`file exists ${filename}`);
-    return [filename];
+  const filedir = dirname(filepath);
+  if (filedir && !(await tryAccess(filedir))) {
+    await fsMkdirAsync(filedir, { recursive: true });
   }
-  console.log(`loading file ${filename}`);
+  if (await tryAccess(filepath)) {
+    console.log(`file exists ${filepath}`);
+    return [filepath];
+  }
+  console.log(`loading file ${filepath}`);
 
   let totalLoaded = 0;
   let totalLength = 0;
 
   chunkTransform && chunkTransform.initialize();
-  const filenamePartial = `${filename}${PARTIAL_SUFFIX}`;
-  const partialExists = await _existsAsync(filenamePartial);
+  const filepathPartial = `${filepath}${PARTIAL_SUFFIX}`;
+  const partialExists = await tryAccess(filepathPartial);
 
   if (partialExists) {
-    const fileIn = fs.createReadStream(filenamePartial);
+    const fileIn = fs.createReadStream(filepathPartial);
     for await (const chunk of fileIn) {
       chunkTransform && (await chunkTransform.update(chunk));
       totalLoaded += chunk.length;
@@ -58,7 +52,7 @@ const commonload = async ({
     fileIn.destroy();
   }
 
-  const fileOut = fs.createWriteStream(filenamePartial, { flags: "a", start: totalLoaded });
+  const fileOut = fs.createWriteStream(filepathPartial, { flags: "a", start: totalLoaded });
   for (;;) {
     const contentLoadStartTime = Date.now();
     let contentLoadElapsedTime = 0;
@@ -138,8 +132,8 @@ const commonload = async ({
   fileOut.end();
   await finished(fileOut);
 
-  await fsRenameAsync(filenamePartial, filename);
-  return [filename];
+  await fsRenameAsync(filepathPartial, filepath);
+  return [filepath];
 };
 
 module.exports = {

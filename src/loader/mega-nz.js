@@ -1,5 +1,6 @@
 "use strict";
 
+const { sep: pathSep } = require("path");
 const { commonload } = require("./common");
 const { sleep, base64urlDecode, decrypt, aesEcbDecipher, aesCbcDecipher, aesCtrDecipher } = require("../helper");
 const { request } = require("../request");
@@ -70,12 +71,12 @@ const _decryptAttributes = (attributes, key, doFold = true) => {
 };
 
 const load = async (url, urlParts, { limit, router }) => {
-  const _downloadAndDecrypt = (link, filename, key) => {
+  const _downloadAndDecrypt = (link, filepath, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)]);
     let decipher = null;
     const requestSize = 500000000; // 0.5GB
     return commonload({
-      filename,
+      filepath,
       url: link,
       bytesPerSecond: limit,
       requestSize,
@@ -103,16 +104,10 @@ const load = async (url, urlParts, { limit, router }) => {
     });
   };
 
-  const _getFilename = (data, key) => {
-    const attributes = _decryptAttributes(data.at, key);
-    return attributes.n;
-  };
-
-  const _getFile = (data, key) => {
+  const _getFile = (data, key, filepath = null) => {
     const link = data.g;
-    const attributes = _decryptAttributes(data.at, key);
-    const filename = attributes.n;
-    return _downloadAndDecrypt(link, filename, key);
+    filepath = filepath || _decryptAttributes(data.at, key).n;
+    return _downloadAndDecrypt(link, filepath, key);
   };
 
   const { pathname: urlPathname, hash: urlHash } = urlParts;
@@ -138,29 +133,40 @@ const load = async (url, urlParts, { limit, router }) => {
       let folderId = linkId;
       let folderKey = base64urlDecode(linkKey);
       let folderData = await _api({ n: folderId }, { a: "f", c: 1, r: 1 });
-      let files = [];
 
       // NOTE: collect filenames with associated decryption info, then sort and load them.
+      let folders = {};
+      let files = [];
       for (const node of folderData.f) {
         const isFile = node.t === 0;
+        const isFolder = node.t === 1;
+        if (!isFile && !isFolder) {
+          continue;
+        }
         let nodeKey = node.k.split(":")[1];
         nodeKey = base64urlDecode(nodeKey);
         nodeKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), nodeKey);
         const nodeId = node.h;
-        // const nodeParentId = node.p;
-        // const attributes = _decryptAttributes(node.a, nodeKey, isFile);
-        // const nodeName = attributes.n;
-        if (isFile) {
+        const nodeParentId = node.p;
+        const nodeName = _decryptAttributes(node.a, nodeKey, isFile).n;
+        if (isFolder) {
+          folders[nodeId] = folders[nodeParentId] ? [folders[nodeParentId], nodeName].join(pathSep) : nodeName;
+        } else if (isFile) {
           const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId });
-          files.push({ filename: _getFilename(nodeData, nodeKey), nodeData, fileKey: nodeKey });
+          files.push({
+            filepath: folders[nodeParentId] ? [folders[nodeParentId], nodeName].join(pathSep) : nodeName,
+            filename: nodeName,
+            nodeData,
+            fileKey: nodeKey,
+          });
         }
       }
 
-      files.sort((a, b) => a.filename.localeCompare(b.filename));
-      for (const { nodeData, fileKey } of files) {
-        await _getFile(nodeData, fileKey);
+      files.sort((a, b) => a.filepath.localeCompare(b.filepath));
+      for (const { filepath, nodeData, fileKey } of files) {
+        await _getFile(nodeData, fileKey, filepath);
       }
-      return files.map(({ filename }) => filename);
+      return files.map(({ filepath }) => filepath);
     }
     default:
       throw new Error(`unknown mega link type ${linkType}`);

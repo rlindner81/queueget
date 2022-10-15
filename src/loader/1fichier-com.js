@@ -26,7 +26,7 @@ const load = async (url, urlParts, { limit, router }) => {
     if (realLink === null) {
       throw new Error(`could not read real link for url ${url}`);
     }
-    return commonload({ filename, url: realLink, bytesPerSecond: limit });
+    return commonload({ filepath: filename, url: realLink, bytesPerSecond: limit });
   }
 };
 

@@ -43,7 +43,7 @@ const load = async (url, urlParts, { limit, router }) => {
     }
   }
   console.log("after waiting");
-  return commonload({ filename, url: link, bytesPerSecond: limit });
+  return commonload({ filepath: filename, url: link, bytesPerSecond: limit });
 };
 
 module.exports = {

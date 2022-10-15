@@ -4,7 +4,7 @@ const { commonload } = require("./common");
 
 const load = (url, urlParts, { limit }) => {
   const filename = urlParts.pathname.replace(/^\//, "").replace(/[^.\w]/g, "-");
-  return commonload({ filename, url, bytesPerSecond: limit });
+  return commonload({ filepath: filename, url, bytesPerSecond: limit });
 };
 
 module.exports = {

@@ -84,7 +84,9 @@ const tryAccess = async (...args) => {
     await access(...args);
     return true;
   } catch (err) {
-    return false;
+    if (err.code === "ENOENT") {
+      return false;
+    } else throw err;
   }
 };
 
