@@ -163,10 +163,10 @@ const load = async (url, urlParts, { limit, router }) => {
         nodeKey = base64urlDecode(nodeKey);
         nodeKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), nodeKey);
         const nodeId = node.h;
-        const nodeParentId = node.p;
-        const attributes = _decryptAttributes(node.a, nodeKey, isFile);
-        const nodeName = attributes.n;
-        if (node.t === 0) {
+        // const nodeParentId = node.p;
+        // const attributes = _decryptAttributes(node.a, nodeKey, isFile);
+        // const nodeName = attributes.n;
+        if (isFile) {
           const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId });
           files.push({ filename: _getFilename(nodeData, nodeKey), nodeData, fileKey: nodeKey });
         }
