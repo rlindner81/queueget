@@ -16,6 +16,7 @@ const _getAdapter = (name, collection) =>
     : null;
 
 const queue = async ({
+  flatten,
   queueFile = "queue.txt",
   historyFile = "queue_history.txt",
   restoreFile,
@@ -66,7 +67,7 @@ const queue = async ({
       try {
         const loader = _getAdapter(hostname, loaders);
         console.info(`using hoster ${loader.name} for ${url}`);
-        filenames = await loader.load(url, urlParts, { queueStack, limit, router });
+        filenames = await loader.load(url, urlParts, { flatten, queueStack, limit, router });
         break;
       } catch (err) {
         console.error(err.stack || err.message);

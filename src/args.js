@@ -13,6 +13,7 @@ options:
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
+  --flatten          ignore directories
 `;
 
 const versionText = () => `version ${version}`;
@@ -30,19 +31,20 @@ const parseArgs = (args) => {
   let routername = null;
   let help = false;
   let version = false;
+  let flatten = false;
 
   let parsedOptions = 0;
   const rest = args
     .join(" ")
     .trim()
     .replace(
-      /--(help|version|queue|history|restore|retries|limit|router)\s*(.*?)\s*(?=$|--(?:help|version|queue|history|restore|retries|limit|router))/g,
+      /--(help|version|flatten|queue|history|restore|retries|limit|router)\s*(.*?)\s*(?=$|--(?:help|version|flatten|queue|history|restore|retries|limit|router))/g,
       (_, option, arg) => {
         const unquotedArg = _unquoteArg(arg);
         parsedOptions++;
 
         assert(
-          ["version", "help"].includes(option) || unquotedArg.length !== 0,
+          ["version", "help", "flatten"].includes(option) || unquotedArg.length !== 0,
           `${ordinal(parsedOptions)} option --${option} has no associated argument`
         );
 
@@ -52,6 +54,9 @@ const parseArgs = (args) => {
             break;
           case "help":
             help = true;
+            break;
+          case "flatten":
+            flatten = true;
             break;
           case "queue":
             queueFile = unquotedArg;
@@ -79,7 +84,7 @@ const parseArgs = (args) => {
     );
   assert(rest.length === 0, `missed (partial) arguments '${rest}'`);
 
-  return { help, version, queueFile, historyFile, restoreFile, retries, limit, routername };
+  return { help, version, flatten, queueFile, historyFile, restoreFile, retries, limit, routername };
 };
 
 module.exports = {

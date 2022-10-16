@@ -70,7 +70,7 @@ const _decryptAttributes = (attributes, key, doFold = true) => {
   return attributes;
 };
 
-const load = async (url, urlParts, { limit, router }) => {
+const load = async (url, urlParts, { flatten, limit, router }) => {
   const _downloadAndDecrypt = (link, filepath, key) => {
     const iv = Buffer.concat([key.slice(16, 24), Buffer.alloc(8, 0)]);
     let decipher = null;
@@ -150,12 +150,14 @@ const load = async (url, urlParts, { limit, router }) => {
         const nodeParentId = node.p;
         const nodeName = _decryptAttributes(node.a, nodeKey, isFile).n;
         if (isFolder) {
+          if (flatten) {
+            continue;
+          }
           folders[nodeId] = folders[nodeParentId] ? [folders[nodeParentId], nodeName].join(pathSep) : nodeName;
         } else if (isFile) {
           const nodeData = await _api({ n: folderId }, { a: "g", g: 1, n: nodeId });
           files.push({
             filepath: folders[nodeParentId] ? [folders[nodeParentId], nodeName].join(pathSep) : nodeName,
-            filename: nodeName,
             nodeData,
             fileKey: nodeKey,
           });
