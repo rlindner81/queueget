@@ -45,6 +45,7 @@ options:
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
+  --flatten          ignore directories
 
 ```
 
