@@ -1,5 +1,8 @@
 # QueueGet
 
+[![npm version](https://badge.fury.io/js/queueget.svg)](https://badge.fury.io/js/queueget)
+![CI Main](https://github.com/rlindner81/queueget/actions/workflows/ci-main.yml/badge.svg)
+
 Download links from a queue file.
 
 ## Install
