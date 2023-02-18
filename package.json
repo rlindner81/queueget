@@ -14,10 +14,13 @@
   "scripts": {
     "test": "jest",
     "lint": "npm run eslint && npm run prettier",
-    "eslint": "eslint . --fix",
-    "prettier": "prettier \"**/*.{js,json,md,yml,yaml}\" --write --loglevel error",
-    "prepublishOnly": "npm audit && npm run lint && npm run test",
-    "upgrade-lock": "npx shx rm -rf package-lock.json node_modules && npm i --package-lock=true"
+    "lint:ci": "npm run eslint:ci && npm run prettier:ci",
+    "eslint": "eslint --fix .",
+    "eslint:ci": "eslint .",
+    "prettier": "prettier --write --loglevel error .",
+    "prettier:ci": "prettier --check .",
+    "prepublishOnly": "npm test && npm run lint:ci",
+    "upgrade-lock": "npx shx rm -rf package-lock.json node_modules && npm i --package-lock"
   },
   "engines": {
     "node": ">=10.0.0",
