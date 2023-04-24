@@ -1,7 +1,9 @@
 # QueueGet
 
-[![npm version](https://badge.fury.io/js/queueget.svg)](https://badge.fury.io/js/queueget)
-![CI Main](https://github.com/rlindner81/queueget/actions/workflows/ci-main.yml/badge.svg)
+[![npm version](https://img.shields.io/npm/v/queueget)](https://www.npmjs.com/package/queueget)
+[![monthly downloads](https://img.shields.io/npm/dm/queueget)](https://www.npmjs.com/package/queueget)
+[![CI Main](https://github.com/rlindner81/queueget/actions/workflows/ci-main.yml/badge.svg)](https://github.com/rlindner81/queueget/commits/main)
+
 
 Download links from a queue file.
 
