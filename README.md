@@ -54,5 +54,5 @@ options:
 ### Daemon
 
 QueueGet has a daemon mode, where it just downloads the queue without blocking the shell you are using to start it. Use
-`queuegetd` to run this mode instead of `queueget`. The output is written to `queueget.txt` and the process id is 
+`queuegetd` to run this mode instead of `queueget`. The output is written to `queueget.txt` and the process id is
 written to `queueget.pid`, this id is used to ensure only one instance of the daemon is running.
