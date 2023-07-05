@@ -1,10 +1,15 @@
 "use strict";
 
+const pathlib = require("path");
+const { format } = require("util");
 const { assert, ordinal } = require("./helper");
 const { version } = require("../package.json");
 
-const usageText = () => `
-usage: qget [<options>]
+const usageText = () => {
+  const execPathInfo = pathlib.parse(process.argv[1]);
+  return format(
+    `
+usage: %s [<options>]
 
 options:
   --queue FILE       links to download (defaults to queue.txt)
@@ -14,7 +19,10 @@ options:
   --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
   --flatten          ignore directories
-`;
+`,
+    execPathInfo.name
+  );
+};
 
 const versionText = () => `version ${version}`;
 

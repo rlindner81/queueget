@@ -10,8 +10,8 @@ const open = promisify(fs.open);
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
-const PID_FILE = "qget.pid";
-const LOG_FILE = "qget.txt";
+const PID_FILE = "queueget.pid";
+const LOG_FILE = "queueget.txt";
 const SCRIPT = path.join(__dirname, "cli.js");
 
 const _kill = (pid) => {
@@ -28,8 +28,8 @@ const _kill = (pid) => {
     _kill(pid);
     // eslint-disable-next-line no-empty
   } catch (err) {}
-  if (/(?:stop|kill)/gi.test(command)) {
-    console.log("stopping queueget");
+  if (/stop|kill/gi.test(command)) {
+    console.log("stopping queuegetd");
     process.exit(0);
   }
 

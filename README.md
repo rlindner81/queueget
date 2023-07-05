@@ -6,10 +6,10 @@
 
 Download links from a queue file.
 
-## Install
+## Use via npx
 
 ```
-npm install queueget --global
+npx queueget --help
 ```
 
 ## Example
@@ -24,15 +24,13 @@ has some convenience features, such as
 
 ```
 # queue file with link at the top
-queue.txt
-http://www.mirrorservice.org/sites/releases.ubuntu.com/18.04.3/ubuntu-18.04.3-desktop-amd64.iso
+echo 'http://www.mirrorservice.org/sites/releases.ubuntu.com/18.04.3/ubuntu-18.04.3-desktop-amd64.iso' > queue.txt
 
-qget
+# run queueget
+npx queueget
 
 # link is being processed, so still at the top, additional links go below
-queue.txt
-http://www.mirrorservice.org/sites/releases.ubuntu.com/18.04.3/ubuntu-18.04.3-desktop-amd64.iso
-http://www.mirrorservice.org/sites/releases.ubuntu.com/19.10/ubuntu-19.10-desktop-amd64.iso
+echo 'http://www.mirrorservice.org/sites/releases.ubuntu.com/19.10/ubuntu-19.10-desktop-amd64.iso' >> queue.txt
 
 # when processing finishes successfully, the topmost link is removed and further links are processed
 ```
@@ -40,7 +38,7 @@ http://www.mirrorservice.org/sites/releases.ubuntu.com/19.10/ubuntu-19.10-deskto
 ## Usage
 
 ```
-usage: qget [<options>]
+usage: queueget [<options>]
 
 options:
   --queue FILE       links to download (defaults to queue.txt)
@@ -56,5 +54,5 @@ options:
 ### Daemon
 
 QueueGet has a daemon mode, where it just downloads the queue without blocking the shell you are using to start it. Use
-`qgetd` to run this mode instead of `qget`. The output is written to `qget.txt` and the process id is written to
-`qget.pid`, this id is used to ensure only one instance of the daemon is running.
+`queuegetd` to run this mode instead of `queueget`. The output is written to `queueget.txt` and the process id is 
+written to `queueget.pid`, this id is used to ensure only one instance of the daemon is running.
