@@ -13,8 +13,9 @@ usage: %s [<options>]
 
 options:
   --queue FILE       links to download (defaults to queue.txt)
-  --history FILE     links of the past (defaults to queue_history.txt)
-  --restore FILE     restore queue before starting for debugging
+  --retain FILE      links to add on queue every time (defaults to queue_retain.txt)
+  --history FILE     links and files that were processed (defaults to queue_history.txt)
+  --restore FILE     restore queue before starting for debugging (defaults to queue_restore.txt)
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
@@ -32,8 +33,9 @@ const _unquoteArg = (arg) => {
 
 const parseArgs = (args) => {
   let queueFile = "queue.txt";
+  let retainFile = "queue_retain.txt";
   let historyFile = "queue_history.txt";
-  let restoreFile = null;
+  let restoreFile = "queue_restore.txt";
   let retries = 3;
   let limit = 0;
   let routername = null;
@@ -92,7 +94,7 @@ const parseArgs = (args) => {
     );
   assert(rest.length === 0, `missed (partial) arguments '${rest}'`);
 
-  return { help, version, flatten, queueFile, historyFile, restoreFile, retries, limit, routername };
+  return { help, version, flatten, queueFile, retainFile, historyFile, restoreFile, retries, limit, routername };
 };
 
 module.exports = {
