@@ -2,7 +2,7 @@
 
 const _url = require("url");
 const newFilestack = require("./filestack");
-const { sleep, readableBytes } = require("./helper");
+const { sleep, tryAccess, readableBytes } = require("./helper");
 const loaders = require("./loader");
 const routers = require("./router");
 
@@ -25,17 +25,18 @@ const queue = async ({ flatten, queueFile, retainFile, historyFile, restoreFile,
   }
 
   const queueStack = newFilestack(queueFile);
-  if (restoreFile !== null) {
+  if (restoreFile !== null && (await tryAccess(restoreFile))) {
     await queueStack.restore(restoreFile);
     console.log(`restored queue ${restoreFile}`);
   }
+  if (!(await tryAccess(queueFile))) {
+    return console.error(`error: could not find queue file ${queueFile}`);
+  }
   console.log(`loading queue ${queueFile} (${await queueStack.size()})`);
-  if (retainFile !== null) {
+  if (retainFile !== null && (await tryAccess(retainFile))) {
     const retainStack = newFilestack(retainFile);
     const entries = await retainStack.unflush();
-    for (const entry of entries) {
-      await queueStack.push(entry);
-    }
+    await queueStack.pushBottom(...entries);
     console.log(`added retained queue (${entries.length})`);
   }
 
