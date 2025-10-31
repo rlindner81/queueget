@@ -15,15 +15,7 @@ const _getAdapter = (name, collection) =>
     ? collection.fallback
     : null;
 
-const queue = async ({
-  flatten,
-  queueFile = "queue.txt",
-  historyFile = "queue_history.txt",
-  restoreFile,
-  retries = 3,
-  limit,
-  routername,
-}) => {
+const queue = async ({ flatten, queueFile, retainFile, historyFile, restoreFile, retries = 3, limit, routername }) => {
   const router = _getAdapter(routername, routers);
   if (router != null) {
     console.log(`using router ${router.name}`);
@@ -38,6 +30,14 @@ const queue = async ({
     console.log(`restored queue ${restoreFile}`);
   }
   console.log(`loading queue ${queueFile} (${await queueStack.size()})`);
+  if (retainFile !== null) {
+    const retainStack = newFilestack(retainFile);
+    const entries = await retainStack.unflush();
+    for (const entry of entries) {
+      await queueStack.push(entry);
+    }
+    console.log(`added retained queue (${entries.length})`);
+  }
 
   const historyStack = newFilestack(historyFile);
   console.log(`saving history ${historyFile}`);
