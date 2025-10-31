@@ -6,7 +6,6 @@
     "queueget": "./bin/cli.js",
     "queuegetd": "./bin/daemon.js"
   },
-  "main": "./src/index.js",
   "files": [
     "bin",
     "src"
