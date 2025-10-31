@@ -3,9 +3,7 @@ root: true
 #  https://eslint.org/docs/rules/
 env:
   node: true
-  es2017: true
-parserOptions:
-  ecmaVersion: 2018
+  es2023: true
 plugins:
   - jest
 extends:

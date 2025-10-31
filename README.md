@@ -42,8 +42,9 @@ usage: queueget [<options>]
 
 options:
   --queue FILE       links to download (defaults to queue.txt)
-  --history FILE     links of the past (defaults to queue_history.txt)
-  --restore FILE     restore queue before starting for debugging
+  --retain FILE      links to add on queue every time (defaults to queue_retain.txt)
+  --history FILE     links and files that were processed (defaults to queue_history.txt)
+  --restore FILE     restore queue before starting for debugging (defaults to queue_restore.txt)
   --retries NUMBER   number of retries for failing downloads (defaults to 3)
   --limit NUMBER     bytes per second limit for download (defaults to 0, no limit)
   --router TYPE      router for ip refreshing, e.g. fritzbox
