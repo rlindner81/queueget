@@ -1,8 +1,15 @@
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
 # This workflow will publish any new release to the npmjs registry
 
-name: Publish
+name: Publish Release
 
+permissions:
+  id-token: write
+  contents: read
+
+# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release
 on:
+  workflow_dispatch:
   release:
     types: [released]
 
@@ -11,12 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v5
         with:
-          node-version: 16
-          cache: "npm"
+          node-version: 22
+          cache: npm
+          # NOTE: the explicit registry-url is currently needed for the auth token to work
           registry-url: https://registry.npmjs.org/
-      - run: npm ci --package-lock
+      # NOTE: the npm update is needed for trusted publisher id-token integration to work
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
       - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
