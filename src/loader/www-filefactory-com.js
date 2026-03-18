@@ -9,7 +9,7 @@ const load = async (url, urlParts, { limit, router }) => {
   const link = group(
     /<a class="wp-body-box-action-red" id="file-download-free-action-slow" href="#" data-href="(.\S+)">Slow Download<\/a>/,
     firstData,
-    1
+    1,
   );
   const filename = group(/^\S*\/(\S+)$/, link, 1);
   console.log("loading %s", link);

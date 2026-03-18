@@ -21,7 +21,7 @@ options:
   --router TYPE      router for ip refreshing, e.g. fritzbox
   --flatten          ignore directories
 `,
-    execPathInfo.name
+    execPathInfo.name,
   );
 };
 
@@ -55,7 +55,7 @@ const parseArgs = (args) => {
 
         assert(
           ["version", "help", "flatten"].includes(option) || unquotedArg.length !== 0,
-          `${ordinal(parsedOptions)} option --${option} has no associated argument`
+          `${ordinal(parsedOptions)} option --${option} has no associated argument`,
         );
 
         switch (option) {
@@ -90,7 +90,7 @@ const parseArgs = (args) => {
             assert(false, `encountered unknown option --${option}`);
         }
         return "";
-      }
+      },
     );
   assert(rest.length === 0, `missed (partial) arguments '${rest}'`);
 

@@ -12,8 +12,8 @@ const _getAdapter = (name, collection) =>
   Object.prototype.hasOwnProperty.call(collection, name)
     ? collection[name]
     : Object.prototype.hasOwnProperty.call(collection, "fallback")
-    ? collection.fallback
-    : null;
+      ? collection.fallback
+      : null;
 
 const queue = async ({ flatten, queueFile, retainFile, historyFile, restoreFile, retries = 3, limit, routername }) => {
   const router = _getAdapter(routername, routers);
