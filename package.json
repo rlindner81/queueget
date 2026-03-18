@@ -12,18 +12,18 @@
   ],
   "scripts": {
     "test": "jest",
+    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "lint": "npm run eslint && npm run prettier",
-    "lint:ci": "npm run eslint:ci && npm run prettier:ci",
-    "eslint": "eslint --fix .",
-    "eslint:ci": "eslint .",
-    "prettier": "prettier --write --loglevel error .",
-    "prettier:ci": "prettier --check .",
+    "eslint:fix": "eslint --fix .",
+    "eslint": "eslint .",
+    "prettier:fix": "prettier --write --loglevel error .",
+    "prettier": "prettier --check .",
     "prepublishOnly": "npm test && npm run lint:ci",
-    "upgrade-lock": "npx shx rm -rf package-lock.json node_modules && npm i --package-lock"
+    "upgrade-lock": "rm -rf package-lock.json node_modules && npm i",
+    "update-lock": "npm up --save"
   },
   "engines": {
-    "node": ">=10.0.0",
-    "npm": ">=6.0.0"
+    "node": ">=10.0.0"
   },
   "devDependencies": {
     "eslint": "^8.57.1",
