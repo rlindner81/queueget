@@ -32,8 +32,8 @@ const randomHex = async (byteLength) => (await randomBytes(byteLength)).toString
 
 const base64encode = (input) => Buffer.from(input).toString("base64");
 const base64decode = (input) => Buffer.from(input, "base64");
-const base64urlEncode = (input) => base64encode(input).replace(/\+/g, "-").replace(/_/g, "/").replace(/=/g, "");
-const base64urlDecode = (input) => base64decode(input.replace(/-/g, "+").replace(/\//g, "_").replace(/,/g, ""));
+const base64urlEncode = (input) => base64encode(input).replace(/\+/g, "-").replace(/\//g, ",").replace(/=/g, "");
+const base64urlDecode = (input) => base64decode(input.replace(/-/g, "+").replace(/[_,]/g, "/"));
 
 const aesEcbDecipher = (key, iv = null, autoPadding = false) =>
   crypto.createDecipheriv("aes-128-ecb", key, iv).setAutoPadding(autoPadding);

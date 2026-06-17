@@ -143,12 +143,24 @@ const load = async (url, urlParts, { flatten, limit, router }) => {
         if (!isFile && !isFolder) {
           continue;
         }
-        let nodeKey = node.k.split(":")[1];
-        nodeKey = base64urlDecode(nodeKey);
-        nodeKey = decrypt(aesEcbDecipher(_foldKey(folderKey)), nodeKey);
+        let nodeKey = null;
+        let nodeAttrs = null;
+        for (const keyEntry of node.k.split("/")) {
+          const candidate = base64urlDecode(keyEntry.split(":")[1]);
+          if (candidate.length % 16 !== 0) continue;
+          try {
+            const decrypted = decrypt(aesEcbDecipher(_foldKey(folderKey)), candidate);
+            nodeAttrs = _decryptAttributes(node.a, decrypted, isFile);
+            nodeKey = decrypted;
+            break;
+          } catch (e) {
+            // try next key entry
+          }
+        }
+        if (!nodeKey) throw new Error(`could not decrypt node key for ${node.h}`);
         const nodeId = node.h;
         const nodeParentId = node.p;
-        const nodeName = _decryptAttributes(node.a, nodeKey, isFile).n;
+        const nodeName = nodeAttrs.n;
         if (isFolder) {
           if (flatten) {
             continue;
