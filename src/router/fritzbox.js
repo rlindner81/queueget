@@ -57,7 +57,7 @@ const refreshIp = async () => {
   }
 
   let newIp = oldIp;
-  for (; newIp === oldIp && totalSleepTime <= SLEEP_LIMIT; ) {
+  for (; newIp === oldIp && totalSleepTime <= SLEEP_LIMIT;) {
     await _refresh(SLEEP_REFRESH_DELAY);
     newIp = await getExternalIp();
   }

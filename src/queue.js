@@ -70,7 +70,7 @@ const queue = async ({ flatten, queueFile, retainFile, historyFile, restoreFile,
     }
     const { hostname } = urlParts;
     let filenames = null;
-    for (let retry = 1; ; ) {
+    for (let retry = 1; ;) {
       try {
         const loader = _getAdapter(hostname, loaders);
         console.info(`using hoster ${loader.name} for ${url}`);
