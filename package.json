@@ -18,7 +18,7 @@
     "eslint": "eslint .",
     "prettier:fix": "prettier --write --log-level error .",
     "prettier": "prettier --check .",
-    "prepublishOnly": "npm test && npm run lint:ci",
+    "prepublishOnly": "npm test && npm run lint",
     "upgrade-lock": "rm -rf package-lock.json node_modules && npm i",
     "update-lock": "npm up --save"
   },
