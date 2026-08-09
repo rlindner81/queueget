@@ -1,6 +1,5 @@
 "use strict";
 
-const _url = require("url");
 const newFilestack = require("./filestack");
 const { sleep, tryAccess, readableBytes } = require("./helper");
 const loaders = require("./loader");
@@ -61,7 +60,14 @@ const queue = async ({ flatten, queueFile, retainFile, historyFile, restoreFile,
       continue;
     }
     const [url] = urlMatch;
-    const urlParts = _url.parse(url);
+    let urlParts;
+    try {
+      urlParts = new URL(url);
+    } catch (err) {
+      console.error(`error: could not parse url ${url}`);
+      await queueStack.pop();
+      continue;
+    }
     const { hostname } = urlParts;
     let filenames = null;
     for (let retry = 1; ; ) {
